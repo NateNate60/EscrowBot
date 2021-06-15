@@ -39,6 +39,9 @@ class Escrow :
         #recipient's username (ex. "NateNate60")
         self.recipient = ""
 
+        #the contract between the parties
+        self.contract = ""
+
         #value of the escrow in crypto (ex. 0.0001)
         self.value = Decimal(0.)
 
