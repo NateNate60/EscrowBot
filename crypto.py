@@ -25,9 +25,9 @@ class Escrow :
         #in reality just the hash of the current time
         h = hashlib.sha1()
         h.update((str(time.time()) + str(random.random())).encode('utf-8'))
-        self.id = h.hexdigest()
+        self.id = "c4cid" + h.hexdigest()
 
-        #state of the escrow. 0 = waiting deposit, 1 = funded & held, 2 = released, -1 = refunded
+        #state of the escrow. 0 = waiting approval, 1 = waiting deposit, 2 = funded & held, 3 = released, -1 = refunded
         self.state = 0
         
         #which coin the escrow is holding (ex. "btc")
@@ -45,9 +45,6 @@ class Escrow :
         #value of the escrow in crypto (ex. 0.0001)
         self.value = Decimal(0.)
 
-        #whether or not the escrow is considered funded
-        self.funded = False
-
         #the WIF private key for the address holding the escrowed funds
         self.privkey = None
         if (self.coin == 'btc') :
@@ -59,13 +56,18 @@ class Escrow :
                 self.privkey = k.to_wif()
         elif (self.coin == 'bch') :
             if (not config.testnet) :
-                k = bitcash.key()
+                k = bitcash.Key()
                 self.privkey = h.to_wif()
             else :
                 k = bitcash.PrivateKeyTestnet()
                 self.privkey = k.to_wif()
-        elif (self.coin == 'eth') :
-            pass
+        elif (self.coin == 'ltc') :
+            if (not config.testnet) :
+                k = lit.Key()
+                self.privkey = k.to_wif()
+            else :
+                k = lit.PrivateKeyTestnet()
+                self.privkey = k.to_wif()
 
 
     def pay (self, addr: str, feerate: int = 0, ) :
@@ -124,3 +126,14 @@ class Escrow :
         """
         self.state = 2
         self.__notifyavailable()
+
+    def askpayment(self) :
+        """
+        Ask the sender to fund the escrow
+        """
+        if (self.coin == "btc") :
+            k = None
+            if (config.testnet) :
+                k = bit.PrivateKeyTestnet(self.privkey)
+            else (config.testnet)
+                k.address
