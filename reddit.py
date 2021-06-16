@@ -7,7 +7,11 @@ from decimal import Decimal
 r = praw.Reddit(username = config.username, password = config.password, client_id = config.client_id, client_secret = config.client_secret, user_agent = "Nate'sEscrowBot")
 
 
-def checkinbox(r: praw.Reddit, db: database.Database) :
+def checkinbox(r: praw.Reddit, db: database.Database) -> list :
+
+    #list of escrows to monitor for payment
+    elist = []
+
     for message in r.inbox.unread() :
         b = message.body
 
@@ -37,7 +41,8 @@ def checkinbox(r: praw.Reddit, db: database.Database) :
                     continue
             except Exception :
                 message.reply("Invalid syntax. Please see [this page](https://www.reddit.com/r/Cash4Cash/wiki/index/escrow) for help." + config.signature)
-        elif ("!join" in b) :
+        #Join an escrow transaction as the recipient
+        elif ("!join" in b.lower()) :
             try :
                 if ("has invited you to join an escrow transaction" in message.parent().body.lower()) :
                     for word in message.parent().body.lower().split(" ") :
@@ -47,6 +52,8 @@ def checkinbox(r: praw.Reddit, db: database.Database) :
                                 if (escrow.state == 0) :
                                     escrow.state += 1
                                     escrow.askpayment()
+                                    db.add(escrow)
+                                    elist.append(escrow)
                                     continue
                                 else :
                                     message.reply("This escrow transaction cannot be joined." + config.signature)
@@ -54,7 +61,59 @@ def checkinbox(r: praw.Reddit, db: database.Database) :
                             else :
                                 message.reply("You are not the intended recipient to this transaction." + config.signature)
                                 continue
-                    message.reply("This transaction is not an escrow transaction." + config.signature)
+                    message.reply("This message thread is not an escrow transaction." + config.signature)
             except Exception :
                 message.reply("An error has occured." + config.signature)
+        #Release the escrow to the recipient
+        elif ("!release" in b.lower()) :
+            m = b.split(' ')
+            if len(m) != 2 :
+                message.reply("Invalid syntax. The correct syntax is `!release [escrow ID]`. Escrow IDs begin with \"c4cid\"." + config.signature)
+                continue
+            escrow = db.lookup(m[1])
+            if (escrow == None) :
+                message.reply("The provided escrow ID (" + m[1] + ") does not exist. Escrow IDs begin with \"c4cid\"." + config.signature)
+                continue
+            if (escrow.state != 2) :
+                message.reply("Escrow " + escrow.id + " is not fully funded. Only fully funded escrows can be released.")
+                continue
+            if (message.author.name.lower() == escrow.sender) :
+                escrow.release()
+                db.add(escrow)
+            else :
+                message.reply("You are not authorised to release that escrow. Only the sender may release the escrow." + config.signature)
+            
+            # try :
+            #     if ("successfully funded" in message.parent().body.lower()) :
+            #         for word in message.parent().body.lower().split(" ") :
+            #             if ("c4cid" in word) :
+            #                 escrow = db.lookup(word)
+            #                 if (escrow.state != 2) :
+            #                     message.reply("This escrow cannot be released. Only fully-funded unreleased escrows can be released." + config.signature)
+            #                     continue
+            #                 if (message.author.name.lower() == escrow.sender) :
+            #                     escrow.release()
+            #                     db.add(escrow)
+            #                     continue
+            #         else :
+            #             message.reply("This message thread is not an escrow transaction.")
+        #Refund the escrow to the sender
+        elif ("!refund" in b.lower()) :
+            m = b.split(' ')
+            if len(m) != 2 :
+                message.reply("Invalid syntax. The correct syntax is `!refund [escrow ID]`. Escrow IDs begin with \"c4cid\"." + config.signature)
+                continue
+            escrow = db.lookup(m[1])
+            if (escrow == None) :
+                message.reply("The provided escrow ID (" + m[1] + ") does not exist. Escrow IDs begin with \"c4cid\"." + config.signature)
+                continue
+            if (escrow.state != 2) :
+                message.reply("The escrow with ID " + escrow.id + " is not fully funded. Only fully funded escrows can be released.")
+                continue
+            if (message.author.name.lower() == escrow.recipient) :
+                escrow.refund()
+                db.add(escrow)
+            else :
+                message.reply("You are not authorised to refund that escrow. Only the recipient may release the escrow." + config.signature)
+    return elist
 

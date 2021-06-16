@@ -127,7 +127,7 @@ class Escrow :
         self.state = 2
         self.__notifyavailable()
 
-    def askpayment(self) :
+    def askpayment (self) :
         """
         Ask the sender to fund the escrow
         """
@@ -147,6 +147,34 @@ class Escrow :
                 k = lit.PrivateKeyTestnet(self.privkey).address
             else :
                 k = lit.Key(self.privkey).address
-        r.redditor(self.sender).message("Escrow funding address", "In order to fund escrow ID " + self.id + ", please send " + self.value + " " + self.coin.upper() +
+        r.redditor(self.sender).message("Escrow funding address", "In order to fund the escrow with ID " + self.id + ", please send " + self.value + " " + self.coin.upper() +
                                         " to " + k + config.signature)
+    def funded (self) :
+        """
+        Returns whether the escrow is funded
+        """
+        k = None
+        if (self.coin == "btc") :
+            if (config.testnet) :
+                k = bit.PrivateKeyTestnet(self.privkey).address
+            else :
+                k = bit.Key(self.privkey).address
+        elif (self.coin == "bch") :
+            if (config.testnet) :
+                k = bitcash.PrivateKeyTestnet(self.privkey).address
+            else :
+                k = bitcash.Key(self.privkey).address
+        elif (self.coin == "ltc") :
+            if (config.testnet) :
+                k = lit.PrivateKeyTestnet(self.privkey).address
+            else :
+                k = lit.Key(self.privkey).address
         
+
+        if (Decimal(k.get_balance) * Decimal('100000000') < self.value) :
+            return False
+        for i in k.get_unspents() :
+            if (i.confirmations == 0) :
+                return False
+        return True
+
