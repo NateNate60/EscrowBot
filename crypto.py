@@ -131,9 +131,22 @@ class Escrow :
         """
         Ask the sender to fund the escrow
         """
+        k = None
         if (self.coin == "btc") :
-            k = None
             if (config.testnet) :
-                k = bit.PrivateKeyTestnet(self.privkey)
-            else (config.testnet)
-                k.address
+                k = bit.PrivateKeyTestnet(self.privkey).address
+            else :
+                k = bit.Key(self.privkey).address
+        elif (self.coin == "bch") :
+            if (config.testnet) :
+                k = bitcash.PrivateKeyTestnet(self.privkey).address
+            else :
+                k = bitcash.Key(self.privkey).address
+        elif (self.coin == "ltc") :
+            if (config.testnet) :
+                k = lit.PrivateKeyTestnet(self.privkey).address
+            else :
+                k = lit.Key(self.privkey).address
+        r.redditor(self.sender).message("Escrow funding address", "In order to fund escrow ID " + self.id + ", please send " + self.value + " " + self.coin.upper() +
+                                        " to " + k + config.signature)
+        
