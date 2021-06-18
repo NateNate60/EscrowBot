@@ -4,7 +4,7 @@
 Dependencies:
 
 - Bit (`pip3 install bit`). Bitcoin library.
-- Batcash (`pip3 install bitcash`). Bitcoin Cash library.
+- Bitcash (`pip3 install bitcash`). Bitcoin Cash library.
 - Lit (`pip3 install lit`). Litecoin library, although not sure it works since it looks like it's been abandoned for years
 - Web4 (`pip3 install web3`). Ethereum library, although I have not implemented this functionality yet
 - Hashlib. IDs are generated using SHA-1 hashes. SHA-1 is faster than SHA-2 and these don't need to be resistent to attacks because they're only used for ID purposes

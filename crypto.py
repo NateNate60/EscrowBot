@@ -27,7 +27,7 @@ class Escrow :
         h.update((str(time.time()) + str(random.random())).encode('utf-8'))
         self.id = "c4cid" + h.hexdigest()
 
-        #state of the escrow. 0 = waiting approval, 1 = waiting deposit, 2 = funded & held, 3 = released, -1 = refunded
+        #state of the escrow. 0 = waiting approval, 1 = waiting deposit, 2 = funded & held, 3 = released, 4 = complete, -1 = refunded
         self.state = 0
         
         #which coin the escrow is holding (ex. "btc")
@@ -70,30 +70,30 @@ class Escrow :
                 self.privkey = k.to_wif()
 
 
-    def pay (self, addr: str, feerate: int = 0, ) :
+    def pay (self, addr: str, feerate: int = 0 ) -> str :
         """
         Send the funds to addr with a given feerate
         """
-        txid = ""
-        if (self.coin == 'btc') :
-            k = bit.Key(self.privkey)
-            if (feerate == 0) :
-                txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['btc'])), 'btc')], leftover=config.leftover['btc'])
-            else :
-                txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['btc'])), 'btc')], leftover=config.leftover['btc'], fee=feerate)
-        elif (self.coin == 'bch') :
-            k = bitcash.Key(self.privkey)
-            if (feerate == 0) :
-                txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['bch'])), 'bch')], leftover=config.leftover['bch'])
-            else :
-                txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['bch'])), 'bch')], leftover=config.leftover['bch'], fee=feerate)
-        elif (self.coin == 'ltc') :
-            k = lit.Key(self.privkey)
-            if (feerate == 0) :
-                txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['ltc'])), 'ltc')], leftover=config.leftover['ltc'])
-            else :
-                txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['ltc'])), 'ltc')], leftover=config.leftover['ltc'], fee=feerate)
-        return txid
+        try :
+            txid = ""
+            if (self.coin == 'btc') :
+                if (config.testnet) :
+                    k = bit.PrivateKeyTestnet(self.privkey)
+                else :
+                    k = bit.Key(self.privkey)
+                if (feerate == 0) :
+                    txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['btc']) - Decimal(bit.network.get_fee(fast=False) * 227. / 100000000.)), 'btc')], leftover=config.leftover['btc'])
+                else :
+                    txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['btc']) - Decimal(feerate * 227. / 100000000.)), 'btc')], leftover=config.leftover['btc'], fee=feerate)
+            elif (self.coin == 'bch') :
+                k = bitcash.Key(self.privkey)
+                txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['bch']) - Decimal(800.)), 'bch')], leftover=config.leftover['bch'], fee=1)
+            elif (self.coin == 'ltc') :
+                k = lit.Key(self.privkey)
+                txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['ltc']) - Decimal(800.)), 'ltc')], leftover=config.leftover['ltc'], fee=1)
+            return txid
+        except ValueError :
+            return None
 
     def __notifyavailable (self, sender: bool = False) :
         """
@@ -101,17 +101,23 @@ class Escrow :
         which releases to recipient
         """
         if (sender) :
-            r.redditor(self.sender).message("Funds available", str(self.value) + " " + self.coin.upper() + " was released to you. You may withdraw the funds using `!withdraw [address]`." +
-                                            " If you wish to specify a custom feerate, you may do so by using `!withdraw [address] [feerate]`.\n\n" +
+            r.redditor(self.sender).message("Funds available", str(self.value) + " " + self.coin.upper() + " was released to you from the escrow with ID " + self.id + " You may withdraw the funds using `!withdraw [address]`." +
+                                            " If you wish to specify a custom feerate, you may do so by using `!withdraw [escrow ID] [address] [feerate]`.\n\n" +
                                             "    ESCROW VALUE: " + str(self.value) + " " + self.coin.upper() + '\n' +
-                                            "    ESCROW FEE: " + str(Decimal(config.escrowfeee[self.coin])) + " " + self.coin.upper() + '\n' +
-                                            "    TOTAL AVAILABLE (before network fees): " + str(self.value - Decimal(config.escrowfee['ltc'])))
+                                            "    ESCROW FEE: " + str(Decimal(config.escrowfee[self.coin])) + " " + self.coin.upper() + '\n' +
+                                            "    TOTAL AVAILABLE (before network fees): " + str(self.value - Decimal(config.escrowfee[self.coin])) +
+                                            "    RECOMMENDED BTC NETWORK FEE: " + str(bit.network.get_fee(fast=False)) +
+                                            " sat/B\n\nNote: You don't have to specify a BTC network feerate. If you don't, then the recommended feerate at the time of withdrawal," +
+                                            " which may be different than it is now, will be used. BCH and LTC transactions always use 1 sat/B." + config.signature)
         else :
             r.redditor(self.recipient).message("Funds available", str(self.value) + " " + self.coin.upper() + " was released to you. You may withdraw the funds using `!withdraw [address]`." +
-                                            " If you wish to specify a custom feerate, you may do so by using `!withdraw [address] [feerate]`.\n\n" +
-                                            "    ESCROW VALUE: " + str(self.value) + " " + self.coin.upper() + '\n' +
-                                            "    ESCROW FEE: " + str(Decimal(config.escrowfeee[self.coin])) + " " + self.coin.upper() + '\n' +
-                                            "    TOTAL AVAILABLE (before network fees): " + str(self.value - Decimal(config.escrowfee['ltc'])))
+                                               " If you wish to specify a custom feerate, you may do so by using `!withdraw [escrow ID] [address] [feerate]`.\n\n" +
+                                               "    ESCROW VALUE: " + str(self.value) + " " + self.coin.upper() + '\n' +
+                                               "    ESCROW FEE: " + str(Decimal(config.escrowfee[self.coin])) + " " + self.coin.upper() + '\n' +
+                                               "    TOTAL AVAILABLE (before network fees): " + str(self.value - Decimal(config.escrowfee[self.coin])) +
+                                               "    RECOMMENDED BTC NETWORK FEE: " + str(bit.network.get_fee(fast=False)) +
+                                               " sat/B\n\nNote: You don't have to specify a BTC network feerate. If you don't, then the recommended feerate at the time of withdrawal," +
+                                               " which may be different than it is now, will be used. BCH and LTC transactions always use 1 sat/B." + config.signature)
     
     def refund (self) :
         """
@@ -124,7 +130,7 @@ class Escrow :
         """
         Mark the escrow as released. The recipient will be able to withdraw their funds.config
         """
-        self.state = 2
+        self.state = 3
         self.__notifyavailable()
 
     def askpayment (self) :
@@ -147,7 +153,7 @@ class Escrow :
                 k = lit.PrivateKeyTestnet(self.privkey).address
             else :
                 k = lit.Key(self.privkey).address
-        r.redditor(self.sender).message("Escrow funding address", "In order to fund the escrow with ID " + self.id + ", please send " + self.value + " " + self.coin.upper() +
+        r.redditor(self.sender).message("Escrow funding address", "In order to fund the escrow with ID " + self.id + ", please send " + str(self.value) + " " + self.coin.upper() +
                                         " to " + k + config.signature)
     def funded (self) :
         """
@@ -156,22 +162,22 @@ class Escrow :
         k = None
         if (self.coin == "btc") :
             if (config.testnet) :
-                k = bit.PrivateKeyTestnet(self.privkey).address
+                k = bit.PrivateKeyTestnet(self.privkey)
             else :
-                k = bit.Key(self.privkey).address
+                k = bit.Key(self.privkey)
         elif (self.coin == "bch") :
             if (config.testnet) :
-                k = bitcash.PrivateKeyTestnet(self.privkey).address
+                k = bitcash.PrivateKeyTestnet(self.privkey)
             else :
-                k = bitcash.Key(self.privkey).address
+                k = bitcash.Key(self.privkey)
         elif (self.coin == "ltc") :
             if (config.testnet) :
-                k = lit.PrivateKeyTestnet(self.privkey).address
+                k = lit.PrivateKeyTestnet(self.privkey)
             else :
-                k = lit.Key(self.privkey).address
+                k = lit.Key(self.privkey)
         
-
-        if (Decimal(k.get_balance) * Decimal('100000000') < self.value) :
+        lk = k.get_balance()
+        if (Decimal(k.get_balance()) / Decimal('100000000') < self.value) :
             return False
         for i in k.get_unspents() :
             if (i.confirmations == 0) :

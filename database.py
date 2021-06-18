@@ -5,6 +5,7 @@ the database of escrows
 
 import sqlite3
 import crypto
+import config
 from decimal import Decimal
 
 class Database :
@@ -20,7 +21,7 @@ class Database :
                     " value TEXT NOT NULL," +
                     " contract TEXT," +
                     " privkey TEXT NOT NULL"
-                    ")")
+                    ");")
             self.db.commit()
 
     def lookup (self, id: str) -> crypto.Escrow :
@@ -29,35 +30,58 @@ class Database :
         Returns the escrow object, or None if the escrow ID does not exist
         """
         cursor = self.db.cursor()
-        cursor.execute("SELECT * FROM transactions WHERE id=?", (id,))
+        cursor.execute("SELECT * FROM transactions WHERE id=?;", (id,))
         rows = cursor.fetchall()
         if (len(rows) == 0) :
             return None
-        escrow = crypto.Escrow(rows[0][4])
-        escrow.id = rows[0][0]
-        escrow.sender = rows[0][1]
-        escrow.recipient = rows[0][2]
-        escrow.state = rows[0][3]
-        escrow.value = Decimal(rows[0][5])
-        escrow.contract = rows[0][6]
-        escrow.privkey = rows[0][7]
-        return escrow
+        return self._decode(rows[0])
 
     def add (self, escrow: crypto.Escrow) :
         """
         Add an escrow transaction to the database
         Overwrite existing records
         """
-        self.db.execute("DELETE FROM transactions WHERE id=?", (escrow.id,))
-        self.db.execute("INSERT INTO transactions VALUES (" + escrow.id + "," + escrow.sender + "," + escrow.recipient + "," + escrow.state + "," + escrow.coin + "," + str(escrow.value) + "," + escrow.contract + "," + escrow.privkey + ")")
+        print ("adding", escrow.id)
+        self.db.execute("DELETE FROM transactions WHERE id=?;", (escrow.id,))
+        self.db.execute("INSERT INTO transactions VALUES (\"" + escrow.id + "\",\"" + escrow.sender + "\",\"" + escrow.recipient + "\"," + str(escrow.state) + ",\"" + escrow.coin + "\",\"" + str(escrow.value) + "\",\"" + escrow.contract + "\",\"" + escrow.privkey + "\");")
         self.db.commit()
     
     def bump (self, id: str) :
         """
         Increase the state of an escrow transaction by 1
         """
-        self.db.execute("UPDATE transactions SET state = state + 1 WHERE id=?", (id,))
+        self.db.execute("UPDATE transactions SET state = state + 1 WHERE id=?;", (id,))
         self.db.commit()
+    
+    def read (self) -> list :
+        """
+        Read all active escrows that must be monitored for payment
+        """
+        cursor = self.db.execute("SELECT * FROM transactions WHERE state=1;")
+        element = cursor.fetchall()
+        lis = []
+        for i in element :
+            if (i[3] == 1) :
+                lis.append(self._decode(i))
+        return lis
+
+    def _decode (*args) -> crypto.Escrow :
+        """
+        Decode a tuple that represents the data fetched by SQLite
+        from a row 
+        """
+        e = args[1]
+        if (len(e) == 0) :
+            return None
+        escrow = crypto.Escrow(e[4])
+        escrow.id = e[0]
+        escrow.sender = e[1]
+        escrow.recipient = e[2]
+        escrow.state = e[3]
+        escrow.value = Decimal(e[5])
+        escrow.contract = e[6]
+        escrow.privkey = e[7]
+        return escrow
 
 
 def monitorpayment (r, elist: list, db: Database) -> list :
