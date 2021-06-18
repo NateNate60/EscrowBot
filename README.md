@@ -13,7 +13,7 @@ Dependencies:
 
 **PLEASE FEEL FREE TO PERUSE MY CODE AND POINT OUT MISTAKES, BUGS, OR SECURITY FLAWS**
 
-If you spot a security flaw, either open an issue to bring it to my attention or fix it yourself and open a pull request. **This code is not for production use and is probably still very buggy. I did not test it yet.** This code is not and should not be used anywhere until I make sure everything's all good and secure.
+If you spot a security flaw, either open an issue to bring it to my attention or fix it yourself and open a pull request. **This code is not for production use and is probably still very buggy. In its current state, it can escrow BTC testnet coins only** This code is not and should not be used anywhere until I make sure everything's all good and secure.
 
 ## Donations welcome!
 
