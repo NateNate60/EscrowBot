@@ -3,6 +3,7 @@ import config
 import praw
 import database
 from decimal import Decimal
+from prawcore.exceptions import NotFound
 
 r = praw.Reddit(username = config.username, password = config.password, client_id = config.client_id, client_secret = config.client_secret, user_agent = "Nate'sEscrowBot")
 
@@ -25,6 +26,9 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                 escrow.sender = message.author.name.lower()
                 escrow.recipient = d[1].split(' ')[1].lower()
                 escrow.value = Decimal(d[2].split(' ')[1])
+                if (not exists(r, escrow.recipient)) :
+                    message.reply("The recipient's username does not exist." + config.signature)
+                    continue
                 try :
                     r.redditor(escrow.recipient).message("Invitation to join escrow", escrow.sender + " has invited you to join the escrow with ID " + escrow.id +"\n\n" +
                                                          "The amount to be escrowed: " + str(escrow.value) + ' ' + escrow.coin.upper() + '\n'+
@@ -157,3 +161,12 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             message.mark_read()
     return elist
 
+def exists(r: praw.Reddit, username: str) :
+    """
+    Returns whether a Reddit user exists
+    """
+    try :
+        r.redditor(username).id
+    except NotFound :
+        return False
+    return True
