@@ -140,9 +140,9 @@ class Escrow :
         k = None
         if (self.coin == "btc") :
             if (config.testnet) :
-                k = bit.PrivateKeyTestnet(self.privkey).segwit_address
+                k = bit.PrivateKeyTestnet(self.privkey).address
             else :
-                k = bit.Key(self.privkey).segwit_address
+                k = bit.Key(self.privkey).address
         elif (self.coin == "bch") :
             k = bitcash.Key(self.privkey).address
         elif (self.coin == "ltc") :
