@@ -55,12 +55,8 @@ class Escrow :
                 k = bit.PrivateKeyTestnet()
                 self.privkey = k.to_wif()
         elif (self.coin == 'bch') :
-            if (not config.testnet) :
-                k = bitcash.Key()
-                self.privkey = h.to_wif()
-            else :
-                k = bitcash.PrivateKeyTestnet()
-                self.privkey = k.to_wif()
+            k = bitcash.Key()
+            self.privkey = h.to_wif()
         elif (self.coin == 'ltc') :
             if (not config.testnet) :
                 k = lit.Key()
@@ -144,10 +140,7 @@ class Escrow :
             else :
                 k = bit.Key(self.privkey).address
         elif (self.coin == "bch") :
-            if (config.testnet) :
-                k = bitcash.PrivateKeyTestnet(self.privkey).address
-            else :
-                k = bitcash.Key(self.privkey).address
+            k = bitcash.Key(self.privkey).address
         elif (self.coin == "ltc") :
             if (config.testnet) :
                 k = lit.PrivateKeyTestnet(self.privkey).address
@@ -166,10 +159,7 @@ class Escrow :
             else :
                 k = bit.Key(self.privkey)
         elif (self.coin == "bch") :
-            if (config.testnet) :
-                k = bitcash.PrivateKeyTestnet(self.privkey)
-            else :
-                k = bitcash.Key(self.privkey)
+            k = bitcash.Key(self.privkey)
         elif (self.coin == "ltc") :
             if (config.testnet) :
                 k = lit.PrivateKeyTestnet(self.privkey)
