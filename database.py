@@ -43,7 +43,7 @@ class Database :
         """
         print ("adding", escrow.id)
         self.db.execute("DELETE FROM transactions WHERE id=?;", (escrow.id,))
-        self.db.execute("INSERT INTO transactions VALUES (\"" + escrow.id + "\",\"" + escrow.sender + "\",\"" + escrow.recipient + "\"," + str(escrow.state) + ",\"" + escrow.coin + "\",\"" + str(escrow.value) + "\",\"" + escrow.contract + "\",\"" + escrow.privkey + "\");")
+        self.db.execute("INSERT INTO transactions VALUES (\"" + escrow.id + "\",\"" + escrow.sender + "\",\"" + escrow.recipient + "\"," + str(escrow.state) + ",\"" + escrow.coin + "\",\"" + str(escrow.value) + "\", ?,\"" + escrow.privkey + "\");", (escrow.contract,))
         self.db.commit()
     
     def bump (self, id: str) :
