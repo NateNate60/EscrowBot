@@ -56,7 +56,7 @@ class Escrow :
                 self.privkey = k.to_wif()
         elif (self.coin == 'bch') :
             k = bitcash.Key()
-            self.privkey = h.to_wif()
+            self.privkey = k.to_wif()
         elif (self.coin == 'ltc') :
             if (not config.testnet) :
                 k = lit.Key()
@@ -80,10 +80,14 @@ class Escrow :
                 if (feerate == 0) :
                     txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['btc']) - Decimal(bit.network.get_fee(fast=False) * 227. / 100000000.)), 'btc')], leftover=config.leftover['btc'])
                 else :
-                    txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['btc']) - Decimal(feerate * 227. / 100000000.)), 'btc')], leftover=config.leftover['btc'], fee=feerate)
+                    txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['btc']) - Decimal(feerate * .00000227)), 'btc')], leftover=config.leftover['btc'], fee=feerate)
             elif (self.coin == 'bch') :
                 k = bitcash.Key(self.privkey)
-                txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['bch']) - Decimal(800.)), 'bch')], leftover=config.leftover['bch'], fee=1)
+                k.get_unspents()
+                #for somereason the library detects when the address is missing the prefix but does not autocorrect for it
+                if ("bitcoincash:" not in addr) :
+                    addr = "bitcoincash:" + addr
+                txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['bch']) - Decimal(.000008)), 'bch')], leftover=config.leftover['bch'], fee=1)
             elif (self.coin == 'ltc') :
                 k = lit.Key(self.privkey)
                 txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['ltc']) - Decimal(800.)), 'ltc')], leftover=config.leftover['ltc'], fee=1)
@@ -136,9 +140,9 @@ class Escrow :
         k = None
         if (self.coin == "btc") :
             if (config.testnet) :
-                k = bit.PrivateKeyTestnet(self.privkey).address
+                k = bit.PrivateKeyTestnet(self.privkey).segwit_address
             else :
-                k = bit.Key(self.privkey).address
+                k = bit.Key(self.privkey).segwit_address
         elif (self.coin == "bch") :
             k = bitcash.Key(self.privkey).address
         elif (self.coin == "ltc") :
