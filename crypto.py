@@ -16,7 +16,11 @@ from decimal import Decimal
 w3 = web3.Web3(web3.Web3.HTTPProvider('https://kovan.infura.io/v3/79f3325b70d147d0beda556e812b41d4'))
 r = praw.Reddit(username = config.username, password = config.password, client_id = config.client_id, client_secret = config.client_secret, user_agent = "Nate'sEscrowBot")
 
-
+class UnsupportedCoin (Exception) :
+    """
+    Class for an unsupported coin
+    """
+    pass
 
 #Class representing an escrow transaction
 class Escrow :
@@ -31,7 +35,11 @@ class Escrow :
         self.state = 0
         
         #which coin the escrow is holding (ex. "btc")
-        self.coin = coin
+        if (coin not in config.coins) :
+            raise UnsupportedCoin
+        else :
+            self.coin = coin
+
 
         #sender's username (ex. "NateNate60")
         self.sender = ""
