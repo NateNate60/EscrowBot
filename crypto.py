@@ -173,7 +173,7 @@ class Escrow :
             if (Decimal(bitcoinlib.services.services.Service('litecoin').getbalance(bitcoinlib.keys.Key(self.privkey, network='litecoin'))) != self.value) :
                 return False
             else :
-                txs = bitcoinlib.services.services.Service('litecoin').gettransactions('MJ53n56iUmWDrNAomboHeB2S9pcht565D3')
+                txs = bitcoinlib.services.services.Service('litecoin').gettransactions(bitcoinlib.keys.Key(self.privkey, network='litecoin').address())
                 for tx in txs :
                     if (tx.confirmations == 0) :
                         return False
