@@ -9,9 +9,10 @@ import time
 import random
 import config
 import web3
-import lit
+import bitcoinlib
 import praw
 from decimal import Decimal
+
 
 w3 = web3.Web3(web3.Web3.HTTPProvider('https://kovan.infura.io/v3/79f3325b70d147d0beda556e812b41d4'))
 r = praw.Reddit(username = config.username, password = config.password, client_id = config.client_id, client_secret = config.client_secret, user_agent = "Nate'sEscrowBot")
@@ -66,12 +67,8 @@ class Escrow :
             k = bitcash.Key()
             self.privkey = k.to_wif()
         elif (self.coin == 'ltc') :
-            if (not config.testnet) :
-                k = lit.Key()
-                self.privkey = k.to_wif()
-            else :
-                k = lit.PrivateKeyTestnet()
-                self.privkey = k.to_wif()
+            k = bitcoinlib.keys.Key()
+            self.privkey = k.wif()
 
 
     def pay (self, addr: str, feerate: int = 0 ) -> str :
@@ -97,8 +94,11 @@ class Escrow :
                     addr = "bitcoincash:" + addr
                 txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['bch']) - Decimal(.000008)), 'bch')], leftover=config.leftover['bch'], fee=1)
             elif (self.coin == 'ltc') :
-                k = lit.Key(self.privkey)
+                k = bitcoinlib.keys.Key(self.privkey, network='litecoin')
+                ##THIS METHOD IS NON-FUNCTIONAL
                 txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['ltc']) - Decimal(800.)), 'ltc')], leftover=config.leftover['ltc'], fee=1)
+                ##ABOVE IS NON-FUNCTIONAL
+                #Need to create custom send function!!
             return txid
         except ValueError :
             return None
@@ -154,10 +154,7 @@ class Escrow :
         elif (self.coin == "bch") :
             k = bitcash.Key(self.privkey).address
         elif (self.coin == "ltc") :
-            if (config.testnet) :
-                k = lit.PrivateKeyTestnet(self.privkey).address
-            else :
-                k = lit.Key(self.privkey).address
+            k = bitcoinlib.keys.Key(self.privkey, network='litecoin').address()
         r.redditor(self.sender).message("Escrow funding address", "In order to fund the escrow with ID " + self.id + ", please send " + str(self.value) + " " + self.coin.upper() +
                                         " to " + k + config.signature)
     def funded (self) :
@@ -173,10 +170,15 @@ class Escrow :
         elif (self.coin == "bch") :
             k = bitcash.Key(self.privkey)
         elif (self.coin == "ltc") :
-            if (config.testnet) :
-                k = lit.PrivateKeyTestnet(self.privkey)
+            if (Decimal(bitcoinlib.services.services.Service('litecoin').getbalance(bitcoinlib.keys.Key(self.privkey, network='litecoin'))) != self.value) :
+                return False
             else :
-                k = lit.Key(self.privkey)
+                txs = bitcoinlib.services.services.Service('litecoin').gettransactions('MJ53n56iUmWDrNAomboHeB2S9pcht565D3')
+                for tx in txs :
+                    if (tx.confirmations == 0) :
+                        return False
+                return True
+
         
         lk = k.get_balance()
         if (Decimal(k.get_balance()) / Decimal('100000000') < self.value) :
