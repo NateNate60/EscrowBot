@@ -27,7 +27,7 @@ class UnsupportedCoin (Exception) :
 class Escrow :
     def __init__(self, coin: str) -> None:
         #escrow id
-        #in reality just the hash of the current time
+        #in reality just the hash of the current time + random number
         h = hashlib.sha1()
         h.update((str(time.time()) + str(random.random())).encode('utf-8'))
         self.id = "c4cid" + h.hexdigest()
