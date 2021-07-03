@@ -67,7 +67,7 @@ class Escrow :
             k = bitcash.Key()
             self.privkey = k.to_wif()
         elif (self.coin == 'ltc') :
-            k = bitcoinlib.keys.Key()
+            k = bitcoinlib.keys.Key(network='litecoin')
             self.privkey = k.wif()
 
 
@@ -94,11 +94,23 @@ class Escrow :
                     addr = "bitcoincash:" + addr
                 txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['bch']) - Decimal(.000008)), 'bch')], leftover=config.leftover['bch'], fee=1)
             elif (self.coin == 'ltc') :
-                k = bitcoinlib.keys.Key(self.privkey, network='litecoin')
-                ##THIS METHOD IS NON-FUNCTIONAL
-                txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['ltc']) - Decimal(800.)), 'ltc')], leftover=config.leftover['ltc'], fee=1)
-                ##ABOVE IS NON-FUNCTIONAL
-                #Need to create custom send function!!
+                while (True) :
+                    k = bitcoinlib.keys.Key(self.privkey, network='litecoin')
+                    s = bitcoinlib.services.services.Service(network='litecoin')
+                    uxtos = s.getutxos(address=k.address())
+                    val = bitcoinlib.values.Value(str(self.value - Decimal(config.escrowfee['ltc']) - Decimal(.000008)) + " LTC")
+                    targetout = bitcoinlib.transactions.Output(network='litecoin', value=val, address=addr)
+                    feeout = bitcoinlib.transactions.Output(value=bitcoinlib.values.Value(str(config.escrowfee['ltc']) + " LTC"), network='litecoin', address=config.leftover['ltc'])
+                    tx = bitcoinlib.transactions.Transaction(outputs=[targetout, feeout], network='litecoin', fee=800)
+                    if (len(uxtos) == 0) :
+                        continue
+                    for i in uxtos :
+                        tx.add_input(i['txid'], i['output_n'])
+                    tx.sign(keys=k)
+                    txid = tx.txhash
+                    tx.verify()
+                    s.sendrawtransaction(tx.raw_hex())
+                    break
             return txid
         except ValueError :
             return None
@@ -170,7 +182,8 @@ class Escrow :
         elif (self.coin == "bch") :
             k = bitcash.Key(self.privkey)
         elif (self.coin == "ltc") :
-            if (Decimal(bitcoinlib.services.services.Service('litecoin').getbalance(bitcoinlib.keys.Key(self.privkey, network='litecoin'))) != self.value) :
+            k = bitcoinlib.keys.Key(self.privkey, network='litecoin')
+            if (Decimal(bitcoinlib.services.services.Service('litecoin').getbalance(k.address_obj.address)) / Decimal(100000000) < self.value) :
                 return False
             else :
                 txs = bitcoinlib.services.services.Service('litecoin').gettransactions(bitcoinlib.keys.Key(self.privkey, network='litecoin').address())
