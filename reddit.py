@@ -147,7 +147,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                     message.reply("An error occured while sending to that address. Please make sure the address is correct." + config.signature)
                 else :
                     message.reply("Sent TXID: " + txid + config.signature)
-                    escrow.state += 1
+                    escrow.state = 4
                     db.add(escrow)
             except ValueError as e:
                 print (e)
