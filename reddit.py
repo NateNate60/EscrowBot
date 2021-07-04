@@ -89,7 +89,15 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
         #Release the escrow to the recipient
         elif ("!release" in b.lower()) :
             m = b.split(' ')
-            if len(m) != 2 :
+            if (len(m) == 1) :
+                try :
+                    p = r.inbox.message(message.parent_id[3:]).body.lower()
+                    p = p.split('c4cid')[1].split(' ')[0]
+                    b.append('c4cid' + p)
+                except (prawcore.exceptions.Forbidden, TypeError) :
+                    message.reply("It appears that you did not respond to a valid escrow funding notification. You can release any escrow using `" + 
+                                  "!release [EscrowID]`." + config.signature)
+            elif (len(m) != 2) :
                 message.reply("Invalid syntax. The correct syntax is `!release [escrow ID]`. Escrow IDs begin with \"c4cid\"." + config.signature)
                 continue
             escrow = db.lookup(m[1])
@@ -122,7 +130,15 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
         #Refund the escrow to the sender
         elif ("!refund" in b.lower()) :
             m = b.split(' ')
-            if (len(m) != 2) :
+            if (len(m) == 1) :
+                try :
+                    p = r.inbox.message(message.parent_id[3:]).body.lower()
+                    p = p.split('c4cid')[1].split(' ')[0]
+                    b.append('c4cid' + p)
+                except (prawcore.exceptions.Forbidden, TypeError) :
+                    message.reply("It appears that you did not respond to a valid escrow funding notification. You can refund any escrow using `" + 
+                                  "!refund [EscrowID]`." + config.signature)
+            elif (len(m) != 2) :
                 message.reply("Invalid syntax. The correct syntax is `!refund [escrow ID]`. Escrow IDs begin with \"c4cid\"." + config.signature)
                 continue
             escrow = db.lookup(m[1])
