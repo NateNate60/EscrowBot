@@ -54,6 +54,11 @@ class Escrow :
         #value of the escrow in crypto (ex. 0.0001)
         self.value = Decimal(0.)
 
+        #Time since escrow was last interacted with.
+        #This is used to detect abandoned escrows.
+        self.lasttime = int(time.time())
+
+
         #the WIF private key for the address holding the escrowed funds
         self.privkey = None
         if (self.coin == 'btc') :
@@ -75,6 +80,7 @@ class Escrow :
         """
         Send the funds to addr with a given feerate
         """
+        self.lasttime = int(time.time())
         try :
             txid = ""
             if (self.coin == 'btc') :
@@ -144,12 +150,14 @@ class Escrow :
         Mark the escrow as refunded. The sender will be able to withdraw their funds.
         """
         self.state = -1
+        self.lasttime = int(time.time())
         self.__notifyavailable(True)
 
     def release (self) :
         """
         Mark the escrow as released. The recipient will be able to withdraw their funds.config
         """
+        self.lasttime = int(time.time())
         self.state = 3
         self.__notifyavailable()
 
@@ -169,6 +177,7 @@ class Escrow :
             k = bitcoinlib.keys.Key(self.privkey, network='litecoin').address()
         r.redditor(self.sender).message("Escrow funding address", "In order to fund the escrow with ID " + self.id + ", please send " + str(self.value) + " " + self.coin.upper() +
                                         " to " + k + config.signature)
+        self.lasttime = int(time.time())
     def funded (self) :
         """
         Returns whether the escrow is funded

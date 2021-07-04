@@ -6,6 +6,7 @@ the database of escrows
 import sqlite3
 import crypto
 import config
+from time import time
 from decimal import Decimal
 
 class Database :
@@ -20,7 +21,8 @@ class Database :
                     " coin TEXT NOT NULL," +
                     " value TEXT NOT NULL," +
                     " contract TEXT," +
-                    " privkey TEXT NOT NULL"
+                    " privkey TEXT NOT NULL," +
+                    " time INTEGER NOT NULL"
                     ");")
             self.db.commit()
 
@@ -43,7 +45,9 @@ class Database :
         """
         print ("adding", escrow.id)
         self.db.execute("DELETE FROM transactions WHERE id=?;", (escrow.id,))
-        self.db.execute("INSERT INTO transactions VALUES (\"" + escrow.id + "\",\"" + escrow.sender + "\",\"" + escrow.recipient + "\"," + str(escrow.state) + ",\"" + escrow.coin + "\",\"" + str(escrow.value) + "\", ?,\"" + escrow.privkey + "\");", (escrow.contract,))
+        self.db.execute("INSERT INTO transactions VALUES (\"" + escrow.id + "\",\"" + escrow.sender + 
+                        "\",\"" + escrow.recipient + "\"," + str(escrow.state) + ",\"" + escrow.coin + 
+                        "\",\"" + str(escrow.value) + "\", ?,\"" + escrow.privkey + "\", " + time() + ");", (escrow.contract,))
         self.db.commit()
     
     def bump (self, id: str) :
@@ -81,6 +85,7 @@ class Database :
         escrow.value = Decimal(e[5])
         escrow.contract = e[6]
         escrow.privkey = e[7]
+        escrow.lasttime = e[8]
         return escrow
 
 
@@ -90,9 +95,24 @@ def monitorpayment (r, elist: list, db: Database) -> list :
     If payment is detected, the transaction is marked paid, parties notified, and
     the transaction is removed from the monitor list
     Returns the new monitor list
+
+    NOTE: If an escrow goes 24 hours without payment, it will be considered "abandoned"
+    and will be dropped from the list.
     """
     relist = []
     for tx in elist :
+        #If more than 1 day without payment, it's abandoned.
+        if (int(time()) - tx.lasttime > 86400) :
+            r.redditor(tx.sender).message("Escrow funding failed", "Payment to fund the escrow with ID " + tx.id + " has failed or was not confirmed by the network" +
+                                          " within 24 hours. This escrow transaction is now closed. You can start a new transaction " + 
+                                          "[here](https://www.reddit.com/message/compose?to=C4C_Bot&subject=Escrow&message=--NEW%20TRANSACTION--%0APartner:%20yourtradepartnersusername%0AAmount:%200.12345%20BTC/BCH%0A--CONTRACT--%0AWrite%20whatever%20you%20want%20here.%20What%20are%20the%20parties%20agreeing%20to%3F%0AAbout%20this%20service:%20https://www.reddit.com/r/Cash4Cash/wiki/edit/index/escrow)." + 
+                                          " If you did send payment and the transaction has not confirmed for some reason, please contact the moderators of r/Cash4Cash." + 
+                                          config.signature)
+            r.redditor(tx.recipient).message("Escrow funding failed", "The sender for the escrow with ID " + tx.id + " did not make payment " +
+                                             "within 24 hours or their payment did not confirm in time. The transaction has been cancelled. "+
+                                             "If they did send payment, but it was not detected, please contact the mods of r/Cash4Cash." +
+                                             config.signature)
+            continue
         if tx.funded() :
             tx.state = 2
             r.redditor(tx.sender).message("Escrow fully funded", "The escrow with ID " + tx.id + " has been fully funded. The recipient has been informed to complete the service " +
