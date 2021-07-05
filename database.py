@@ -112,6 +112,8 @@ def monitorpayment (r, elist: list, db: Database) -> list :
                                              "within 24 hours or their payment did not confirm in time. The transaction has been cancelled. "+
                                              "If they did send payment, but it was not detected, please contact the mods of r/Cash4Cash." +
                                              config.signature)
+            tx.state = 9
+            db.add(tx)
             continue
         if tx.funded() :
             tx.state = 2
