@@ -80,6 +80,8 @@ class Escrow :
         """
         Send the funds to addr with a given feerate
         """
+        if (feerate == 0) :
+            feerate = bit.network.get_fee(fast=False)
         self.lasttime = int(time.time())
         try :
             txid = ""
@@ -89,7 +91,7 @@ class Escrow :
                 else :
                     k = bit.Key(self.privkey)
                 if (feerate == 0) :
-                    txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['btc']) - Decimal(bit.network.get_fee(fast=False) * 227. / 100000000.)), 'btc')], leftover=config.leftover['btc'])
+                    txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['btc']) - Decimal(feerate * .00000227)), 'btc')], leftover=config.leftover['btc'])
                 else :
                     txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['btc']) - Decimal(feerate * .00000227)), 'btc')], leftover=config.leftover['btc'], fee=feerate)
             elif (self.coin == 'bch') :
@@ -204,6 +206,10 @@ class Escrow :
         
         lk = k.get_balance()
         if (Decimal(k.get_balance()) / Decimal('100000000') < self.value) :
+            return False
+        #not sure why but it otherwise sometimes will think an unconfirmed tx
+        #is confirmed and say the escrow is funded when it's really not
+        if (len(k.get_unspents()) == 0) :
             return False
         for i in k.get_unspents() :
             if (i.confirmations == 0) :
