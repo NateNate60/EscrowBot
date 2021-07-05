@@ -81,7 +81,8 @@ class Escrow :
         Send the funds to addr with a given feerate
         """
         if (feerate == 0) :
-            feerate = bit.network.get_fee(fast=False)
+            fee = bitcoinlib.services.services.Service(network="bitcoin")
+            feerate = str(fee.estimatefee(2))
         self.lasttime = int(time.time())
         try :
             txid = ""
@@ -128,22 +129,24 @@ class Escrow :
         Notify the user of the availability of funds. sender is whether the funds are released to the sender, defaulting to False,
         which releases to recipient
         """
+        fee = bitcoinlib.services.services.Service(network="bitcoin")
+        fee = str(fee.estimatefee(2))
         if (sender) :
             r.redditor(self.sender).message("Funds available", str(self.value) + " " + self.coin.upper() + " was released to you from the escrow with ID " + self.id + " You may withdraw the funds using `!withdraw [address]`." +
                                             " If you wish to specify a custom feerate, you may do so by using `!withdraw [escrow ID] [address] [feerate]`.\n\n" +
                                             "    ESCROW VALUE: " + str(self.value) + " " + self.coin.upper() + '\n' +
                                             "    ESCROW FEE: " + str(Decimal(config.escrowfee[self.coin])) + " " + self.coin.upper() + '\n' +
                                             "    TOTAL AVAILABLE (before network fees): " + str(self.value - Decimal(config.escrowfee[self.coin])) +
-                                            "    RECOMMENDED BTC NETWORK FEE: " + str(bit.network.get_fee(fast=False)) +
+                                            "    RECOMMENDED BTC NETWORK FEE: " + fee +
                                             " sat/B\n\nNote: You don't have to specify a BTC network feerate. If you don't, then the recommended feerate at the time of withdrawal," +
                                             " which may be different than it is now, will be used. BCH and LTC transactions always use 1 sat/B." + config.signature)
         else :
             r.redditor(self.recipient).message("Funds available", str(self.value) + " " + self.coin.upper() + " was released to you from the escrow with ID " + self.id + " You may withdraw the funds using `!withdraw [address]`." +
-                                               " If you wish to specify a custom feerate, you may do so by using `!withdraw [escrow ID] [address] [feerate]`.\n\n" +
+                                               " If you wish to specify a custom feerate, you may do so by using `!withdraw [address] [feerate]`.\n\n" +
                                                "    ESCROW VALUE: " + str(self.value) + " " + self.coin.upper() + '\n' +
                                                "    ESCROW FEE: " + str(Decimal(config.escrowfee[self.coin])) + " " + self.coin.upper() + '\n' +
                                                "    TOTAL AVAILABLE (before network fees): " + str(self.value - Decimal(config.escrowfee[self.coin])) +
-                                               "    RECOMMENDED BTC NETWORK FEE: " + str(bit.network.get_fee(fast=False)) +
+                                               "    RECOMMENDED BTC NETWORK FEE: " + fee +
                                                " sat/B\n\nNote: You don't have to specify a BTC network feerate. If you don't, then the recommended feerate at the time of withdrawal," +
                                                " which may be different than it is now, will be used. BCH and LTC transactions always use 1 sat/B." + config.signature)
     
