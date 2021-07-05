@@ -98,7 +98,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                 try :
                     p = r.inbox.message(message.parent_id[3:]).body.lower()
                     p = p.split('c4cid')[1].split(' ')[0]
-                    b.append('c4cid' + p)
+                    m.append('c4cid' + p)
                 except (prawcore.exceptions.Forbidden, TypeError) :
                     message.reply("It appears that you did not respond to a valid escrow funding notification. You can release any escrow using `" + 
                                   "!release [EscrowID]`." + config.signature)
@@ -139,7 +139,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                 try :
                     p = r.inbox.message(message.parent_id[3:]).body.lower()
                     p = p.split('c4cid')[1].split(' ')[0]
-                    b.append('c4cid' + p)
+                    m.append('c4cid' + p)
                 except (prawcore.exceptions.Forbidden, TypeError) :
                     message.reply("It appears that you did not respond to a valid escrow funding notification. You can refund any escrow using `" + 
                                   "!refund [EscrowID]`." + config.signature)
@@ -164,7 +164,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             if ('c4cid' not in m[1]) :
                 try :
                     p = r.inbox.message(message.parent_id[3:]).body.lower()
-                    if ("was released to you from the escrow with id" not in p) :
+                    if ("was released to you" not in p) :
                         raise TypeError
                     p = p.split('c4cid')[1].split(' ')[0]
                     m.insert(1, 'c4cid' + p)
