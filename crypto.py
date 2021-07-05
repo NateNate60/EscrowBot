@@ -136,7 +136,7 @@ class Escrow :
                                             " sat/B\n\nNote: You don't have to specify a BTC network feerate. If you don't, then the recommended feerate at the time of withdrawal," +
                                             " which may be different than it is now, will be used. BCH and LTC transactions always use 1 sat/B." + config.signature)
         else :
-            r.redditor(self.recipient).message("Funds available", str(self.value) + " " + self.coin.upper() + " was released to you. You may withdraw the funds using `!withdraw [address]`." +
+            r.redditor(self.recipient).message("Funds available", str(self.value) + " " + self.coin.upper() + " was released to you from the escrow with ID " + self.id + " You may withdraw the funds using `!withdraw [address]`." +
                                                " If you wish to specify a custom feerate, you may do so by using `!withdraw [escrow ID] [address] [feerate]`.\n\n" +
                                                "    ESCROW VALUE: " + str(self.value) + " " + self.coin.upper() + '\n' +
                                                "    ESCROW FEE: " + str(Decimal(config.escrowfee[self.coin])) + " " + self.coin.upper() + '\n' +
