@@ -27,7 +27,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                 #Detects SQL injection attempts in the contract field
                 #This is only a problem in that field because everything else splits on a space.
                 if ("--" in escrow.contract or ";" in escrow.contract) :
-                    message.reply("For security reasons, the escrow contract cannot contain double dashes (`--`) or semicolons (`;`).")
+                    message.reply("For security reasons, the escrow contract cannot contain double dashes (`--`) or semicolons (`;`)." + config.signature)
                     continue
                 escrow.sender = message.author.name.lower()
                 escrow.recipient = d[1].split(' ')[1].lower()
