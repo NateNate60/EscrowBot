@@ -40,7 +40,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                                                          "The amount to be escrowed: " + str(escrow.value) + ' ' + escrow.coin.upper() + '\n'+
                                                          "If you wish to join the escrow transaction, you must agree to the following terms, as set out by u/" + escrow.sender + ":\n\n" +
                                                          escrow.contract + "\n\n" +
-                                                         "If you agree to the terms and would like to join the escrow, reply `!join " + escrow.id + "`. If you DO NOT agree to " +
+                                                         "If you agree to the terms and would like to join the escrow, reply `!join`. If you DO NOT agree to " +
                                                          "the terms or the amount, simply ignore this message. You can join again later whenever you want." +
                                                          " **Note:** This does not mean that the sender is guaranteed not a scammer. The escrow has not been funded and no money has been sent yet." +
                                                          config.signature)
