@@ -24,6 +24,11 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                 d = b.split('--CONTRACT--')[0].split('\n')
                 escrow = crypto.Escrow(d[2].split(' ')[2].lower())
                 escrow.contract = b.split('--CONTRACT--')[1]
+                #Detects SQL injection attempts in the contract field
+                #This is only a problem in that field because everything else splits on a space.
+                if ("--" in escrow.contract or ";" in escrow.contract) :
+                    message.reply("For security reasons, the escrow contract cannot contain double dashes (`--`) or semicolons (`;`).")
+                    continue
                 escrow.sender = message.author.name.lower()
                 escrow.recipient = d[1].split(' ')[1].lower()
                 escrow.value = Decimal(d[2].split(' ')[1])
