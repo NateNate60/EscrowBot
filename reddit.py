@@ -208,6 +208,58 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             message.mark_read()
     return elist
 
+def checksub(r: praw.Reddit) :
+    """
+    Check the subreddit for new escrow transactions.
+    """
+    for comment in r.subreddit(config.subreddit).comments(limit=20) :
+        b = comment.body.lower()
+        if ("!escrow" in b) :
+            if (len(b.split(' ')) == 1) :
+                comment.reply("`!escrow`: open a new escrow transaction\n\nUsage: `!escrow [partner] [amount] [coin]`" +
+                              "\n\nStarts a new escrow transaction with u/`partner` for `[amount]` of `[coin]`. For example, `!escrow NateNate60 0.001 BTC` will open" +
+                              " a new escrow transaction with NateNate60 for 0.001 Bitcoin. Additionally, you can put any arbitrary contract text after the command, seperated by a line break." +
+                              " So, you can type:\n\n    !escrow NateNate60 0.001 BTC\n    \n    NateNate60 agrees to send me one 50kg crate of potatoes in exchange for\n    0.001 BTC.\n\n" +
+                              "For more information, [click here](https://reddit.com/r/Cash4Cash/wiki/index/escrow)." + config.signature)
+            else :
+                b = b.split('\n\n')
+                if (len(b) == 1) :
+                    b.append("")
+                contract = ""
+                for i in range(1, len(b)) :
+                    contract += comment.body.split('\n\n')[i]
+                    contract += '\n\n'
+                if ('--' in contract or ';' in contract) :
+                    comment.reply("For security reasons, the contract data may not contain double dashes (`--`) or semicolons (`;`)." + config.signature)
+                    continue
+                escrow = None
+                try :
+                    escrow = crypto.Escrow(b[0].split(' ')[3])
+                    escrow.contract = contract
+                    escrow.recipient = b[0].split(' ')[1]
+                    escrow.sender = comment.author.name()
+                    escrow.value = Decimal(b[0].split(' ')[2])
+                except crypto.UnsupportedCoin :
+                    comment.reply(b[0].split(' ')[2] + " is not a supported coin type.")
+                except Exception :
+                    comment.reply("An error has occured. Please check the syntax and try again." + config.signature)
+                try :
+                    r.redditor(escrow.recipient).message("Invitation to join escrow", escrow.sender + " has invited you to join the escrow with ID " + escrow.id +"\n\n" +
+                                                         "The amount to be escrowed: " + str(escrow.value) + ' ' + escrow.coin.upper() + '\n'+
+                                                         "If you wish to join the escrow transaction, you must agree to the following terms, as set out by u/" + escrow.sender + ":\n\n" +
+                                                         escrow.contract + "\n\n" +
+                                                         "If you agree to the terms and would like to join the escrow, reply `!join`. If you DO NOT agree to " +
+                                                         "the terms or the amount, simply ignore this message. You can join again later whenever you want." +
+                                                         " **Note:** This does not mean that the sender is guaranteed not a scammer. The escrow has not been funded and no money has been sent yet." +
+                                                         config.signature)
+                    comment.reply("New escrow transaction opened. We are now waiting for u/" + escrow.recipient + " to agree to the escrow." +
+                                  " This escrow transaction's ID is " + escrow.id + config.signature)
+                    database.add(escrow)
+                except Exception:
+                    comment.reply("An error occured while sending the invitation to the recipient. Please ensure that the recipient actually exists and you typed their username correctly. Do not include the u/ in their username.")
+                    continue
+
+
 def exists(r: praw.Reddit, username: str) :
     """
     Returns whether a Reddit user exists
