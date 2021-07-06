@@ -43,6 +43,8 @@ class Database :
         Add an escrow transaction to the database
         Overwrite existing records
         """
+        if (escrow == None) :
+            return
         print ("adding", escrow.id)
         self.db.execute("DELETE FROM transactions WHERE id=?;", (escrow.id,))
         self.db.execute("INSERT INTO transactions VALUES (\"" + escrow.id + "\",\"" + escrow.sender + 
