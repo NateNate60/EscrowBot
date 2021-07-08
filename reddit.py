@@ -51,6 +51,11 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                 except Exception:
                     message.reply("An error occured while sending the invitation to the recipient. Please ensure that the recipient actually exists and you typed their username correctly. Do not include the u/ in their username.")
                     continue
+            except crypto.UnsupportedCoin :
+                reply = "Sorry, that coin is currently not supported. The bot only supports "
+                for coin in config.coins :
+                    reply.append(coin.upper() + " ")
+                message.reply(reply + "." + config.signature)
             except Exception as e:
                 print(e)
                 message.reply("Invalid syntax. Please see [this page](https://www.reddit.com/r/Cash4Cash/wiki/index/escrow) for help." + config.signature)
