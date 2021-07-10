@@ -11,10 +11,13 @@ import config
 import web3
 import bitcoinlib
 import praw
+from etherscan import Etherscan
 from decimal import Decimal
 
 
-w3 = web3.Web3(web3.Web3.HTTPProvider('https://kovan.infura.io/v3/79f3325b70d147d0beda556e812b41d4'))
+# Global variable section (loud booing in background)
+etherscan = Etherscan(config.etherscankey, net="rinkeby")
+w3 = web3.Web3(web3.Web3.HTTPProvider(config.infuraurl))
 r = praw.Reddit(username = config.username, password = config.password, client_id = config.client_id, client_secret = config.client_secret, user_agent = "Nate'sEscrowBot")
 
 class UnsupportedCoin (Exception) :
@@ -74,6 +77,11 @@ class Escrow :
         elif (self.coin == 'ltc') :
             k = bitcoinlib.keys.Key(network='litecoin')
             self.privkey = k.wif()
+        elif (self.coin == "eth") :
+            #Since ETH is not uxto-based, self.privkey instead stores a random 3-digit identifier.
+            self.privkey = '000'
+            while (self.privkey == '000') : #identifier should not be 000
+                self.privkey = str(int(random.random() * 1000))
 
 
     def pay (self, addr: str, feerate: int = 0 ) -> str :
@@ -120,8 +128,23 @@ class Escrow :
                     tx.verify()
                     s.sendrawtransaction(tx.raw_hex())
                     break
+            elif (self.coin == "eth") :
+                txs = etherscan.get_normal_txs_by_address(config.ethaddr, 0, 9999999999, "asc")
+                nonce = 0
+                for tx in txs :
+                    if (tx['from'] == config.ethaddr.lower()) :
+                        nonce += 1
+                transaction = {'to': addr,
+                               "value": int(self.value * Decimal('1000000000000000000') - (Decimal('21000') * Decimal(etherscan.get_gas_oracle()['ProposeGasPrice']) * Decimal(1000000000) )),
+                               "gas": 21000,
+                               'gasPrice': int(Decimal(etherscan.get_gas_oracle()['ProposeGasPrice']) * Decimal(1000000000)),
+                               'nonce': nonce
+                               }
+                signed = w3.eth.account.sign_transaction(transaction, config.ethpriv)
+                txid = w3.eth.send_raw_transaction(signed.rawTransaction).hex()
+
             return txid
-        except ValueError :
+        except (ValueError, TypeError) :
             return None
 
     def __notifyavailable (self, sender: bool = False) :
@@ -129,27 +152,31 @@ class Escrow :
         Notify the user of the availability of funds. sender is whether the funds are released to the sender, defaulting to False,
         which releases to recipient
         """
-        fee = bitcoinlib.services.services.Service(network="bitcoin")
-        fee = str(fee.estimatefee(2))
+        fee = "1"
+        if (self.coin == 'btc') :
+            fee = bitcoinlib.services.services.Service(network="bitcoin")
+            fee = str(fee.estimatefee(2))
+        elif (self.coin == 'eth') :
+            fee = etherscan.get_gas_oracle()['ProposeGasPrice']
+        
+        message = (str(self.value) + " " + self.coin.upper() + " was released to you from the escrow with ID " + self.id + " You may withdraw the funds using `!withdraw [address]`." +
+                  " If you wish to specify a custom feerate, you may do so by using `!withdraw [escrow ID] [address] [feerate]`.\n\n" +
+                  "    ESCROW VALUE: " + str(self.value) + " " + self.coin.upper() + '\n' +
+                  "    ESCROW FEE: " + str(Decimal(config.escrowfee[self.coin])) + " " + self.coin.upper() + '\n' +
+                  "    TOTAL AVAILABLE (before network fees): " + str(self.value - Decimal(config.escrowfee[self.coin])) + '\n\n' +
+                  "    RECOMMENDED NETWORK FEE: " + fee)
+        if (self.coin in ['btc', 'ltc', 'bch']) :
+            message += " sat/B\n\nNote: You don't have to use the suggested network fee on BTC. You can specify however higher (or low) of a fee as you want."
+            message += " However, if you choose not to specify a feerate, the suggested feerate will be used, which may be different at the time of withdrawal than it is now."
+        elif (self.coin == "eth") :
+            message += " gw/gas\n\nNote: Custom feerates are currently not supported on ETH. The suggested feerate will always be used. This is because the ETH network requires transactions be confirmed in order."
+        message += config.signature
         if (sender) :
-            r.redditor(self.sender).message("Funds available", str(self.value) + " " + self.coin.upper() + " was released to you from the escrow with ID " + self.id + " You may withdraw the funds using `!withdraw [address]`." +
-                                            " If you wish to specify a custom feerate, you may do so by using `!withdraw [escrow ID] [address] [feerate]`.\n\n" +
-                                            "    ESCROW VALUE: " + str(self.value) + " " + self.coin.upper() + '\n' +
-                                            "    ESCROW FEE: " + str(Decimal(config.escrowfee[self.coin])) + " " + self.coin.upper() + '\n' +
-                                            "    TOTAL AVAILABLE (before network fees): " + str(self.value - Decimal(config.escrowfee[self.coin])) +
-                                            "    RECOMMENDED BTC NETWORK FEE: " + fee +
-                                            " sat/B\n\nNote: You don't have to specify a BTC network feerate. If you don't, then the recommended feerate at the time of withdrawal," +
-                                            " which may be different than it is now, will be used. BCH and LTC transactions always use 1 sat/B." + config.signature)
+            r.redditor(self.sender).message("Funds available", message)
         else :
-            r.redditor(self.recipient).message("Funds available", str(self.value) + " " + self.coin.upper() + " was released to you from the escrow with ID " + self.id + " You may withdraw the funds using `!withdraw [address]`." +
-                                               " If you wish to specify a custom feerate, you may do so by using `!withdraw [address] [feerate]`.\n\n" +
-                                               "    ESCROW VALUE: " + str(self.value) + " " + self.coin.upper() + '\n' +
-                                               "    ESCROW FEE: " + str(Decimal(config.escrowfee[self.coin])) + " " + self.coin.upper() + '\n' +
-                                               "    TOTAL AVAILABLE (before network fees): " + str(self.value - Decimal(config.escrowfee[self.coin])) +
-                                               "    RECOMMENDED BTC NETWORK FEE: " + fee +
-                                               " sat/B\n\nNote: You don't have to specify a BTC network feerate. If you don't, then the recommended feerate at the time of withdrawal," +
-                                               " which may be different than it is now, will be used. BCH and LTC transactions always use 1 sat/B." + config.signature)
-    
+            r.redditor(self.recipient).message("Funds available", message)
+
+
     def refund (self) :
         """
         Mark the escrow as refunded. The sender will be able to withdraw their funds.
@@ -180,6 +207,15 @@ class Escrow :
             k = bitcash.Key(self.privkey).address
         elif (self.coin == "ltc") :
             k = bitcoinlib.keys.Key(self.privkey, network='litecoin').address()
+        
+        #ETH is handled differently because it requires an identifier
+        if (self.coin == "eth") :
+            r.redditor(self.sender).message("Escrow funding address", "In order to fund the escrow with ID " + self.id + 
+                                            ", please send " + str(self.value) + self.privkey + " " + self.coin.upper() +
+                                            " to " + config.ethaddr + ".\n\n**IMPORTANT**: You must send _exactly_ this amount, after fees. If too little or too much is received," +
+                                            " your payment will not be detected. If you accidentally sent the wrong amount, please reach out to us for help!" + config.signature)
+            self.lasttime = int(time.time())
+            return
         r.redditor(self.sender).message("Escrow funding address", "In order to fund the escrow with ID " + self.id + ", please send " + str(self.value) + " " + self.coin.upper() +
                                         " to " + k + config.signature)
         self.lasttime = int(time.time())
@@ -205,6 +241,22 @@ class Escrow :
                     if (tx.confirmations == 0) :
                         return False
                 return True
+        elif (self.coin == "eth") :
+            txs = etherscan.get_normal_txs_by_address(config.ethaddr, 0, 9999999999, "dec")
+            for tx in txs :
+                if (int(tx['confirmations']) < 6) :
+                    continue
+                precision = Decimal('0.00000001')
+                value = Decimal(tx['value']) / Decimal(1000000000000000000)
+                value = value.quantize(precision)
+                value = str(value)
+                if (value[7:] != self.privkey) :
+                    continue #identifier does not match
+                #else, identifier matches (NOTE: This doesn't mean that the transaction is for this particular escrow!)
+                if (Decimal(value[:7]) == self.value) :
+                    return True
+            return False
+
 
         
         lk = k.get_balance()

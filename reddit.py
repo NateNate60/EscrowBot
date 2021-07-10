@@ -31,7 +31,13 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                     continue
                 escrow.sender = message.author.name.lower()
                 escrow.recipient = d[1].split(' ')[1].lower()
-                escrow.value = Decimal(d[2].split(' ')[1])
+                #Round ETH values to 5 decimal places
+                if (escrow.coin == "eth") :
+                    precision = Decimal("0.00001")
+                    val = Decimal(d[2].split(' ')[1])
+                    escrow.value = val.quantize(precision)
+                else :
+                    escrow.value = Decimal(d[2].split(' ')[1])
                 if (not exists(r, escrow.recipient)) :
                     message.reply("The recipient's username does not exist." + config.signature)
                     continue
@@ -44,6 +50,9 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                                                          "the terms or the amount, simply ignore this message. You can join again later whenever you want." +
                                                          " **Note:** This does not mean that the sender is guaranteed not a scammer. The escrow has not been funded and no money has been sent yet." +
                                                          config.signature)
+                    if (escrow.coin == "eth") :
+                        message.reply("New escrow transaction opened. We are now waiting for u/" + escrow.recipient + " to agree to the escrow." +
+                                      " This escrow transaction's ID is " + escrow.id + ". **NOTE: ETH escrow values are rounded to the nearest 0.00001." + config.signature)
                     message.reply("New escrow transaction opened. We are now waiting for u/" + escrow.recipient + " to agree to the escrow." +
                                   " This escrow transaction's ID is " + escrow.id + config.signature)
                     
@@ -249,14 +258,25 @@ def checksub(r: praw.Reddit) :
                 except Exception :
                     comment.reply("An error has occured. Please check the syntax and try again." + config.signature)
                 try :
-                    r.redditor(escrow.recipient).message("Invitation to join escrow", escrow.sender + " has invited you to join the escrow with ID " + escrow.id +"\n\n" +
-                                                         "The amount to be escrowed: " + str(escrow.value) + ' ' + escrow.coin.upper() + '\n'+
-                                                         "If you wish to join the escrow transaction, you must agree to the following terms, as set out by u/" + escrow.sender + ":\n\n" +
-                                                         escrow.contract + "\n\n" +
-                                                         "If you agree to the terms and would like to join the escrow, reply `!join`. If you DO NOT agree to " +
-                                                         "the terms or the amount, simply ignore this message. You can join again later whenever you want." +
-                                                         " **Note:** This does not mean that the sender is guaranteed not a scammer. The escrow has not been funded and no money has been sent yet." +
-                                                         config.signature)
+                    if (escrow.coin != 'eth') :
+                        r.redditor(escrow.recipient).message("Invitation to join escrow", escrow.sender + " has invited you to join the escrow with ID " + escrow.id +"\n\n" +
+                                                            "The amount to be escrowed: " + str(escrow.value) + ' ' + escrow.coin.upper() + '\n'+
+                                                            "If you wish to join the escrow transaction, you must agree to the following terms, as set out by u/" + escrow.sender + ":\n\n" +
+                                                            escrow.contract + "\n\n" +
+                                                            "If you agree to the terms and would like to join the escrow, reply `!join`. If you DO NOT agree to " +
+                                                            "the terms or the amount, simply ignore this message. You can join again later whenever you want." +
+                                                            "\n\n**Note:** This does not mean that the sender is guaranteed not a scammer. The escrow has not been funded and no money has been sent yet." +
+                                                            config.signature)
+                    else :
+                        r.redditor(escrow.recipient).message("Invitation to join escrow", escrow.sender + " has invited you to join the escrow with ID " + escrow.id +"\n\n" +
+                                                            "The amount to be escrowed: " + str(escrow.value) + ' ' + escrow.coin.upper() + '\n'+
+                                                            "If you wish to join the escrow transaction, you must agree to the following terms, as set out by u/" + escrow.sender + ":\n\n" +
+                                                            escrow.contract + "\n\n" +
+                                                            "If you agree to the terms and would like to join the escrow, reply `!join`. If you DO NOT agree to " +
+                                                            "the terms or the amount, simply ignore this message. You can join again later whenever you want. Since this is an ETH escrow, please be aware that " +
+                                                            "custom feerates are not supported yet when you withdraw your funds.\n\n"
+                                                            " **Note:** This does not mean that the sender is guaranteed not a scammer. The escrow has not been funded and no money has been sent yet." +
+                                                            config.signature)
                     comment.reply("New escrow transaction opened. We are now waiting for u/" + escrow.recipient + " to agree to the escrow." +
                                   " This escrow transaction's ID is " + escrow.id + config.signature)
                     database.add(escrow)
