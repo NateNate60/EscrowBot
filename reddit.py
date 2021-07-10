@@ -233,7 +233,7 @@ def checksub(r: praw.Reddit) :
         commentsrepliedto = s
 
     for comment in r.subreddit(config.subreddit).comments(limit=20) :
-        if (comment.id in commentsrepliedto) :
+        if (comment.id in commentsrepliedto or comment.authorname == r.user.me().name) :
             continue
         b = comment.body.lower()
         if ("!escrow" in b) :
