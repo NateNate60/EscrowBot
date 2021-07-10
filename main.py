@@ -14,7 +14,8 @@ def main () :
         while (True) :
             elist += reddit.checkinbox(r, db)
             elist = monitorpayment(r, elist, db)
-    except KeyboardInterrupt as e:
+
+    except (Exception, KeyboardInterrupt) as e:
         print (e)
         db.db.close()
 
