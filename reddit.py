@@ -226,7 +226,15 @@ def checksub(r: praw.Reddit) :
     """
     Check the subreddit for new escrow transactions.
     """
+    commentsrepliedto = []
+    with open ('comments.txt', 'r') as f :
+        s = f.read()
+        s.split('\n')
+        commentsrepliedto = s
+
     for comment in r.subreddit(config.subreddit).comments(limit=20) :
+        if (comment.id in commentsrepliedto) :
+            continue
         b = comment.body.lower()
         if ("!escrow" in b) :
             if (len(b.split(' ')) == 1) :
@@ -283,6 +291,11 @@ def checksub(r: praw.Reddit) :
                 except Exception:
                     comment.reply("An error occured while sending the invitation to the recipient. Please ensure that the recipient actually exists and you typed their username correctly. Do not include the u/ in their username.")
                     continue
+    with open ('comments.txt', 'w') as f :
+        write = ""
+        for c in commentsrepliedto :
+            write += c + '\n'
+        f.write(write)
 
 
 def exists(r: praw.Reddit, username: str) :
