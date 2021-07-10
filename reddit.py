@@ -222,15 +222,14 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             message.mark_read()
     return elist
 
-def checksub(r: praw.Reddit) :
+def checksub(r: praw.Reddit, db: database.Database) :
     """
     Check the subreddit for new escrow transactions.
     """
     commentsrepliedto = []
     with open ('comments.txt', 'r') as f :
         s = f.read()
-        s.split('\n')
-        commentsrepliedto = s
+        commentsrepliedto = s.split('\n')
 
     for comment in r.subreddit(config.subreddit).comments(limit=20) :
         if (comment.id in commentsrepliedto or comment.author.name == r.user.me().name) :
@@ -248,9 +247,12 @@ def checksub(r: praw.Reddit) :
                 if (len(b) == 1) :
                     b.append("")
                 contract = ""
-                for i in range(1, len(b)) :
-                    contract += comment.body.split('\n\n')[i]
-                    contract += '\n\n'
+                try :
+                    for i in range(1, len(b)) :
+                        contract += comment.body.split('\n\n')[i]
+                        contract += '\n\n'
+                except IndexError :
+                    pass
                 if ('--' in contract or ';' in contract) :
                     comment.reply("For security reasons, the contract data may not contain double dashes (`--`) or semicolons (`;`)." + config.signature)
                     continue
@@ -259,7 +261,7 @@ def checksub(r: praw.Reddit) :
                     escrow = crypto.Escrow(b[0].split(' ')[3])
                     escrow.contract = contract
                     escrow.recipient = b[0].split(' ')[1]
-                    escrow.sender = comment.author.name()
+                    escrow.sender = comment.author.name
                     escrow.value = Decimal(b[0].split(' ')[2])
                 except crypto.UnsupportedCoin :
                     comment.reply(b[0].split(' ')[2] + " is not a supported coin type.")
@@ -287,10 +289,11 @@ def checksub(r: praw.Reddit) :
                                                             config.signature)
                     comment.reply("New escrow transaction opened. We are now waiting for u/" + escrow.recipient + " to agree to the escrow." +
                                   " This escrow transaction's ID is " + escrow.id + config.signature)
-                    database.add(escrow)
+                    db.add(escrow)
                 except Exception:
                     comment.reply("An error occured while sending the invitation to the recipient. Please ensure that the recipient actually exists and you typed their username correctly. Do not include the u/ in their username.")
                     continue
+        commentsrepliedto.append(comment.id)
     with open ('comments.txt', 'w') as f :
         write = ""
         for c in commentsrepliedto :
