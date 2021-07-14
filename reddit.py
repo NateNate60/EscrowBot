@@ -31,6 +31,8 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                     continue
                 escrow.sender = message.author.name.lower()
                 escrow.recipient = d[1].split(' ')[1].lower()
+                if ('u/' in escrow.recipient) :
+                    escrow.recipient = escrow.recipient[2:]
                 #Round ETH values to 5 decimal places
                 if (escrow.coin == "eth") :
                     precision = Decimal("0.00001")
@@ -269,6 +271,8 @@ def checksub(r: praw.Reddit, db: database.Database) :
                     escrow = crypto.Escrow(b[0].split(' ')[3])
                     escrow.contract = contract
                     escrow.recipient = b[0].split(' ')[1]
+                    if ('u/' in escrow.recipient) :
+                        escrow.recipient = escrow.recipient[2:]
                     escrow.sender = comment.author.name
                     escrow.value = Decimal(b[0].split(' ')[2])
                 except crypto.UnsupportedCoin :
