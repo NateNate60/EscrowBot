@@ -236,8 +236,11 @@ def checksub(r: praw.Reddit, db: database.Database) :
         except ValueError :
             pass
 
-    for comment in r.subreddit(config.subreddit).comments(limit=20) :
-        if (comment.id in commentsrepliedto or comment.author.name == r.user.me().name) :
+    for comment in r.subreddit(config.subreddit).comments(limit=1000) :
+        try :
+            if (comment.id in commentsrepliedto or comment.author.name == r.user.me().name) :
+                continue
+        except AttributeError :
             continue
         b = comment.body.lower()
         if ("!escrow" in b) :
