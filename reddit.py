@@ -230,6 +230,11 @@ def checksub(r: praw.Reddit, db: database.Database) :
     with open ('comments.txt', 'r') as f :
         s = f.read()
         commentsrepliedto = s.split('\n')
+        try :
+            while (True) :
+                commentsrepliedto.remove('')
+        except ValueError :
+            pass
 
     for comment in r.subreddit(config.subreddit).comments(limit=20) :
         if (comment.id in commentsrepliedto or comment.author.name == r.user.me().name) :
