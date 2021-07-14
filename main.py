@@ -1,5 +1,6 @@
 import reddit
 from database import Database, monitorpayment
+from prawcore import exceptions
 import config
 import praw
 
@@ -13,7 +14,11 @@ def main () :
             elist += reddit.checkinbox(r, db)
             elist = monitorpayment(r, elist, db)
             reddit.checksub(r, db)
-    except (Exception, KeyboardInterrupt) as e:
+    except (exceptions.ServerError) as e :
+        print(e)
+        db.db.close()
+        main()
+    except (Exception, KeyboardInterrupt) as e :
         print (e)
         db.db.close()
 
