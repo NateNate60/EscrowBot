@@ -21,6 +21,7 @@ If I get enough in donations then we probably won't need to collect any escrow f
 - btc: 3BzrZKHv1F5qNZK45vUkZMBZUrpF1vtgD9
 - bch: qzj3km6zfqlul8utf2kepwxncmadp5j80qg7dp0m3g
 - ltc: MWXZLvyL7rE5zarAxz6i34iqwVFJzZ978o
+- eth: 0xC50840e9fec8d5F6c696896362393a0Ac3d1A8b6
 
 
 ## To-do list
