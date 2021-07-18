@@ -14,7 +14,7 @@ def main () :
             elist += reddit.checkinbox(r, db)
             elist = monitorpayment(r, elist, db)
             reddit.checksub(r, db)
-    except (exceptions.ServerError) as e :
+    except (exceptions.ServerError, exceptions.RequestException) as e :
         print(e)
         db.db.close()
         main()
