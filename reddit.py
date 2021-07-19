@@ -273,7 +273,7 @@ def checksub(r: praw.Reddit, db: database.Database) :
                     escrow.recipient = b[0].split(' ')[1]
                     if ('u/' in escrow.recipient) :
                         escrow.recipient = escrow.recipient[2:]
-                    escrow.sender = comment.author.name
+                    escrow.sender = comment.author.name.lower()
                     escrow.value = Decimal(b[0].split(' ')[2])
                 except crypto.UnsupportedCoin :
                     comment.reply(b[0].split(' ')[2] + " is not a supported coin type.")
