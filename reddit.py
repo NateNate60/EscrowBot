@@ -131,6 +131,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             if (message.author.name.lower() == escrow.sender) :
                 escrow.release()
                 db.add(escrow)
+                message.reply("Successfully released." + config.signature)
             else :
                 message.reply("You are not authorised to release that escrow. Only the sender may release the escrow." + config.signature)
             
@@ -172,6 +173,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             if (message.author.name.lower() == escrow.recipient) :
                 escrow.refund()
                 db.add(escrow)
+                message.reply("Successfully refunded." + config.signature)
             else :
                 message.reply("You are not authorised to refund that escrow. Only the recipient may release the escrow." + config.signature)
         #Withdraw funds from an escrow
