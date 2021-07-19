@@ -39,6 +39,7 @@ class Escrow :
         self.state = 0
         
         #which coin the escrow is holding (ex. "btc")
+        coin = coin[:3]
         if (coin not in config.coins) :
             raise UnsupportedCoin
         else :
