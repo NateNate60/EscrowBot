@@ -14,13 +14,14 @@ def main () :
             elist += reddit.checkinbox(r, db)
             elist = monitorpayment(r, elist, db)
             reddit.checksub(r, db)
-    except (exceptions.ServerError, exceptions.RequestException) as e :
+    except (exceptions.ServerError, exceptions.RequestException, exceptions.ResponseException) as e :
         print(e)
         db.db.close()
         main()
     except (Exception, KeyboardInterrupt) as e :
         print (e)
         db.db.close()
+        raise e
 
 if (__name__ == '__main__') :
     main()
