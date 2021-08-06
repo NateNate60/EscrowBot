@@ -1,4 +1,4 @@
-from prawcore import exceptions
+from prawcore
 import crypto
 import config
 import praw
@@ -15,7 +15,6 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
     elist = []
 
     for message in r.inbox.unread() :
-        message.mark_read()
         b = message.body
 
         #New escrow transaction
@@ -28,6 +27,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                 #This is only a problem in that field because everything else splits on a space.
                 if ("--" in escrow.contract or ";" in escrow.contract) :
                     message.reply("For security reasons, the escrow contract cannot contain double dashes (`--`) or semicolons (`;`)." + config.signature)
+                    message.mark_read()
                     continue
                 escrow.sender = message.author.name.lower()
                 escrow.recipient = d[1].split(' ')[1].lower()
@@ -42,6 +42,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                     escrow.value = Decimal(d[2].split(' ')[1])
                 if (not exists(r, escrow.recipient)) :
                     message.reply("The recipient's username does not exist." + config.signature)
+                    message.mark_read()
                     continue
                 try :
                     r.redditor(escrow.recipient).message("Invitation to join escrow", escrow.sender + " has invited you to join the escrow with ID " + escrow.id +"\n\n" +
@@ -61,6 +62,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                     db.add(escrow)
                 except Exception:
                     message.reply("An error occured while sending the invitation to the recipient. Please ensure that the recipient actually exists and you typed their username correctly. Do not include the u/ in their username.")
+                    message.mark_read()
                     continue
             except crypto.UnsupportedCoin :
                 reply = "Sorry, that coin is currently not supported. The bot only supports "
@@ -70,6 +72,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             except Exception as e:
                 print(e)
                 message.reply("Invalid syntax. Please see [this page](https://www.reddit.com/r/Cash4Cash/wiki/index/escrow) for help." + config.signature)
+            message.mark_read()
         #Join an escrow transaction as the recipient
         elif ("!join" in b.lower()) :
             escrow = None
@@ -81,17 +84,20 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                     b = b.split('c4cid')[1].split('\n')[0]
                     escrow = db.lookup('c4cid' + b)
                     print('Looking up c4cid' + b)
-                except (prawcore.exceptions.Forbidden, ValueError, TypeError) :
+                except (prawcore.exceptions.Forbidden, ValueError, TypeError, IndexError) :
                     message.reply("The message you replied to isn't an invitation to join an escrow. Please try again." + config.signature)
+                    message.mark_read()
                     continue
             elif (len(b.split(' ')) != 2) :
                 message.reply("Invalid syntax. The correct syntax is `!join [escrow ID]`. Escrow IDs begin with \"c4cid\"." + config.signature)
+                message.mark_read()
                 continue
             else :
                 if ("c4cid" in b.lower().split(' ')[1]) :
                     escrow = db.lookup(b.lower().split(' ')[1])
             if (escrow == None) :
                 message.reply("This escrow transaction does not exist." + config.signature)
+                message.mark_read()
                 continue
             if (message.author.name.lower() == escrow.recipient) :
                 if (escrow.state == 0) :
@@ -99,12 +105,15 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                     escrow.askpayment()
                     db.add(escrow)
                     elist.append(escrow)
+                    message.mark_read()
                     continue
                 else :
                     message.reply("This escrow transaction cannot be joined." + config.signature)
+                    message.mark_read()
                     continue
             else :
                 message.reply("You are not the intended recipient to this transaction." + config.signature)
+                message.mark_read()
                 continue
 
         #Release the escrow to the recipient
@@ -115,26 +124,32 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                     p = r.inbox.message(message.parent_id[3:]).body.lower()
                     p = p.split('c4cid')[1].split(' ')[0]
                     m.append('c4cid' + p)
-                except (prawcore.exceptions.Forbidden, TypeError) :
+                except (prawcore.exceptions.Forbidden, TypeError, IndexError) :
                     message.reply("It appears that you did not respond to a valid escrow funding notification. You can release any escrow using `" + 
                                   "!release [EscrowID]`." + config.signature)
+                    message.mark_read()
+                    continue
             elif (len(m) != 2) :
                 message.reply("Invalid syntax. The correct syntax is `!release [escrow ID]`. Escrow IDs begin with \"c4cid\"." + config.signature)
+                message.mark_read()
                 continue
             escrow = db.lookup(m[1])
             if (escrow == None) :
                 message.reply("The provided escrow ID (" + m[1] + ") does not exist. Escrow IDs begin with \"c4cid\"." + config.signature)
+                message.mark_read()
                 continue
             if (escrow.state != 2) :
                 message.reply("Escrow " + escrow.id + " is not fully funded. Only fully funded escrows can be released.")
+                message.mark_read()
                 continue
             if (message.author.name.lower() == escrow.sender) :
                 escrow.release()
                 db.add(escrow)
                 message.reply("Successfully released." + config.signature)
+                message.mark_read()
             else :
                 message.reply("You are not authorised to release that escrow. Only the sender may release the escrow." + config.signature)
-            
+            message.mark_read()
             # try :
             #     if ("successfully funded" in message.parent().body.lower()) :
             #         for word in message.parent().body.lower().split(" ") :
@@ -157,18 +172,23 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                     p = r.inbox.message(message.parent_id[3:]).body.lower()
                     p = p.split('c4cid')[1].split(' ')[0]
                     m.append('c4cid' + p)
-                except (prawcore.exceptions.Forbidden, TypeError) :
+                except (prawcore.exceptions.Forbidden, TypeError, IndexError) :
                     message.reply("It appears that you did not respond to a valid escrow funding notification. You can refund any escrow using `" + 
                                   "!refund [EscrowID]`." + config.signature)
+                    message.mark_read()
+                    continue
             elif (len(m) != 2) :
                 message.reply("Invalid syntax. The correct syntax is `!refund [escrow ID]`. Escrow IDs begin with \"c4cid\"." + config.signature)
+                message.mark_read()
                 continue
             escrow = db.lookup(m[1])
             if (escrow == None) :
                 message.reply("The provided escrow ID (" + m[1] + ") does not exist. Escrow IDs begin with \"c4cid\"." + config.signature)
+                message.mark_read()
                 continue
             if (escrow.state != 2) :
                 message.reply("The escrow with ID " + escrow.id + " is not fully funded. Only fully funded escrows can be released.")
+                message.mark_read()
                 continue
             if (message.author.name.lower() == escrow.recipient) :
                 escrow.refund()
@@ -176,6 +196,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                 message.reply("Successfully refunded." + config.signature)
             else :
                 message.reply("You are not authorised to refund that escrow. Only the recipient may release the escrow." + config.signature)
+            message.mark_read()
         #Withdraw funds from an escrow
         elif ("!withdraw" in b.lower()) :
             m = b.split(' ')
@@ -189,22 +210,27 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                 except (TypeError, prawcore.exceptions.Forbidden) :
                     message.reply("The message you replied to is not a funds availability notice. You can also withdraw from any escrow given the escrow ID by using `!withdraw [escrow ID] [address]`" +
                                   config.signature)
+                    message.mark_read()
                     continue
             if (len(m) != 3 and len(m) != 4) :
                 message.reply("Invalid syntax. The correct syntax is `!withdraw [escrow ID] [address]`. Additionally, you may specify your own feerate: `!withdraw [escrow ID] [address] [feerate]`" +
                               config.signature)
+                message.mark_read()
                 continue
             m.append('0')
             escrow = db.lookup(m[1])
             if (escrow == None) :
                 message.reply("That escrow ID (" + m[1] + ") does not exist." + config.signature)
+                message.mark_read()
                 continue
             if ((escrow.recipient != message.author.name.lower() and escrow.state == 3) or (escrow.sender != message.author.name.lower() and escrow.state == -1)) :
                 message.reply("You are not authorised to withdraw from this escrow." + config.signature)
+                message.mark_read()
                 continue
             elif (escrow.state != 3 and escrow.state != -1) :
                 print (escrow.id, escrow.state)
                 message.reply("This escrow cannot be withdrawn from." + config.signature)
+                message.mark_read()
                 continue
             try :
                 txid = escrow.pay(m[2],int(m[3]))
@@ -217,12 +243,8 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             except ValueError as e:
                 print (e)
                 message.reply("Invalid feerate. Feerate must be a number." + config.signature)
+                message.mark_read()
                 continue
-
-            
-        else :
-            #If no command is found, mark it unread.
-            #This is so another script can check it for triggers.
             message.mark_read()
     return elist
 
