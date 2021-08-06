@@ -1,4 +1,3 @@
-from prawcore
 import crypto
 import config
 import praw
