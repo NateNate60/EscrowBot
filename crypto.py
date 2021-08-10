@@ -91,7 +91,7 @@ class Escrow :
         """
         if (feerate == 0) :
             fee = bitcoinlib.services.services.Service(network="bitcoin")
-            feerate = str(fee.estimatefee(2))
+            feerate = fee.estimatefee(2) // 1000
         self.lasttime = int(time.time())
         try :
             txid = ""
@@ -100,10 +100,7 @@ class Escrow :
                     k = bit.PrivateKeyTestnet(self.privkey)
                 else :
                     k = bit.Key(self.privkey)
-                if (feerate == 0) :
-                    txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['btc']) - Decimal(feerate * .00000227)), 'btc')], leftover=config.leftover['btc'])
-                else :
-                    txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['btc']) - Decimal(feerate * .00000227)), 'btc')], leftover=config.leftover['btc'], fee=feerate)
+                txid = k.send([(addr, float(self.value - Decimal(config.escrowfee['btc']) - Decimal(feerate * .00000227)), 'btc')], leftover=config.leftover['btc'], fee=feerate)
             elif (self.coin == 'bch') :
                 k = bitcash.Key(self.privkey)
                 k.get_unspents()
