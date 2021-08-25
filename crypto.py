@@ -16,7 +16,7 @@ from decimal import Decimal
 
 
 # Global variable section (loud booing in background)
-etherscan = Etherscan(config.etherscankey, net="rinkeby")
+etherscan = Etherscan(config.etherscankey, net="main")
 w3 = web3.Web3(web3.Web3.HTTPProvider(config.infuraurl))
 r = praw.Reddit(username = config.username, password = config.password, client_id = config.client_id, client_secret = config.client_secret, user_agent = "Nate'sEscrowBot")
 
