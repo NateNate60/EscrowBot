@@ -136,7 +136,8 @@ class Escrow :
                                "value": int(self.value * Decimal('1000000000000000000') - (Decimal('21000') * Decimal(etherscan.get_gas_oracle()['ProposeGasPrice']) * Decimal(1000000000) )),
                                "gas": 21000,
                                'gasPrice': int(Decimal(etherscan.get_gas_oracle()['ProposeGasPrice']) * Decimal(1000000000)),
-                               'nonce': nonce
+                               'nonce': nonce,
+                               'from': "0xC50840e9fec8d5F6c696896362393a0Ac3d1A8b6"
                                }
                 signed = w3.eth.account.sign_transaction(transaction, config.ethpriv)
                 txid = w3.eth.send_raw_transaction(signed.rawTransaction).hex()
@@ -153,7 +154,7 @@ class Escrow :
         fee = "1"
         if (self.coin == 'btc') :
             fee = bitcoinlib.services.services.Service(network="bitcoin")
-            fee = str(fee.estimatefee(2))
+            fee = str(fee.estimatefee(2) // 1000)
         elif (self.coin == 'eth') :
             fee = etherscan.get_gas_oracle()['ProposeGasPrice']
         
