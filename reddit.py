@@ -305,7 +305,7 @@ def checksub(r: praw.Reddit, db: database.Database) :
                 try :
                     if (escrow.coin != 'eth') :
                         r.redditor(escrow.recipient).message("Invitation to join escrow", escrow.sender + " has invited you to join the escrow with ID " + escrow.id +"\n\n" +
-                                                            "The amount to be escrowed: " + str(escrow.value) + ' ' + escrow.coin.upper() + '\n'+
+                                                            "The amount to be escrowed: " + str(escrow.value) + ' ' + escrow.coin.upper() + '\n\n'+
                                                             "If you wish to join the escrow transaction, you must agree to the following terms, as set out by u/" + escrow.sender + ":\n\n" +
                                                             escrow.contract + "\n\n" +
                                                             "If you agree to the terms and would like to join the escrow, reply `!join`. If you DO NOT agree to " +
@@ -314,7 +314,7 @@ def checksub(r: praw.Reddit, db: database.Database) :
                                                             config.signature)
                     else :
                         r.redditor(escrow.recipient).message("Invitation to join escrow", escrow.sender + " has invited you to join the escrow with ID " + escrow.id +"\n\n" +
-                                                            "The amount to be escrowed: " + str(escrow.value) + ' ' + escrow.coin.upper() + '\n'+
+                                                            "The amount to be escrowed: " + str(escrow.value) + ' ' + escrow.coin.upper() + '\n\n'+
                                                             "If you wish to join the escrow transaction, you must agree to the following terms, as set out by u/" + escrow.sender + ":\n\n" +
                                                             escrow.contract + "\n\n" +
                                                             "If you agree to the terms and would like to join the escrow, reply `!join`. If you DO NOT agree to " +

@@ -165,7 +165,7 @@ class Escrow :
                   "    TOTAL AVAILABLE (before network fees): " + str(self.value - Decimal(config.escrowfee[self.coin])) + '\n\n' +
                   "    RECOMMENDED NETWORK FEE: " + fee)
         if (self.coin in ['btc', 'ltc', 'bch']) :
-            message += " sat/B\n\nNote: You don't have to use the suggested network fee on BTC. You can specify however higher (or low) of a fee as you want."
+            message += " sat/B\n\nNote: You don't have to use the suggested network fee on BTC. You can specify however high (or low) of a fee as you want."
             message += " However, if you choose not to specify a feerate, the suggested feerate will be used, which may be different at the time of withdrawal than it is now."
         elif (self.coin == "eth") :
             message += " gw/gas\n\nNote: Custom feerates are currently not supported on ETH. The suggested feerate will always be used. This is because the ETH network requires transactions be confirmed in order."
