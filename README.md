@@ -10,7 +10,7 @@ Dependencies:
 
 **PLEASE FEEL FREE TO PERUSE MY CODE AND POINT OUT MISTAKES, BUGS, OR SECURITY FLAWS**
 
-If you spot a security flaw, either open an issue to bring it to my attention or fix it yourself and open a pull request.
+If you spot a security flaw, either open an issue to bring it to my attention or fix it yourself and open a pull request. For particularly serious problems, please see my contact info at the bottom and send me a message in private. If the bug can be easily exploited in a way that could cause money to be lost or stolen, I will personally pay you a small bug bounty.
 
 Also, if you're wondering why I only use `bitcoinlib` for Litecoin and not for Bitcoin as well, it's because `bitcoinlib` is stupidly slow to run. `bit` is much faster than `bitcoinlib`, no contest.
 
