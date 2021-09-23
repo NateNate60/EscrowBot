@@ -198,7 +198,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             message.mark_read()
         #Withdraw funds from an escrow
         elif ("!withdraw" in b.lower()) :
-            m = b.split(' ')
+            m = message.body.split(' ')
             if ('c4cid' not in m[1]) :
                 try :
                     p = r.inbox.message(message.parent_id[3:]).body.lower()
