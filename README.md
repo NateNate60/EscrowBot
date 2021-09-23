@@ -1,5 +1,11 @@
 # EscrowBot
 
+## Are you interested in having this bot run on your subreddit?
+
+Contact me using the information below! Hosting is provided by me, free of charge. The bot runs in a US datacentre and the server receives regular security updates.
+
+You are also free to clone the code and run it yourself!
+
 Dependencies:
 
 - Bit (`pip3 install bit`). Bitcoin library.
