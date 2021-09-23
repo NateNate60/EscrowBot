@@ -133,7 +133,7 @@ class Escrow :
                     if (tx['from'] == config.ethaddr.lower()) :
                         nonce += 1
                 transaction = {'to': addr,
-                               "value": int(self.value * Decimal('1000000000000000000') - (Decimal('21000') * Decimal(etherscan.get_gas_oracle()['ProposeGasPrice']) * Decimal(1000000000) )),
+                               "value": int(self.value * Decimal('1000000000000000000') - (Decimal('21000') * Decimal(etherscan.get_gas_oracle()['ProposeGasPrice']) * Decimal(1000000000) ) - (Decimal(config.escrowfee["eth"]) * Decimal(1000000000000000000))),
                                "gas": 21000,
                                'gasPrice': int(Decimal(etherscan.get_gas_oracle()['ProposeGasPrice']) * Decimal(1000000000)),
                                'nonce': nonce,
