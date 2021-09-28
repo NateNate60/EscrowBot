@@ -44,7 +44,7 @@ class Database :
         Overwrite existing records
         """
         if (escrow.coin == "eth") :
-            escrow.value = str(escrow.value)[:7]
+            escrow.value = Decimal(str(escrow.value)[:7])
         if (escrow == None) :
             return
         print ("adding", escrow.id)
