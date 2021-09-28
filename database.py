@@ -43,6 +43,8 @@ class Database :
         Add an escrow transaction to the database
         Overwrite existing records
         """
+        if (escrow.coin == "eth") :
+            escrow.value = str(escrow.value)[:7]
         if (escrow == None) :
             return
         print ("adding", escrow.id)
