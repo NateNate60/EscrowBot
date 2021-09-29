@@ -43,6 +43,8 @@ class Escrow :
         if (coin not in config.coins) :
             raise UnsupportedCoin
         else :
+            if (coin == "dog") : #doge is 4 letters
+                coin = "doge"
             self.coin = coin
 
 
@@ -77,6 +79,9 @@ class Escrow :
             self.privkey = k.to_wif()
         elif (self.coin == 'ltc') :
             k = bitcoinlib.keys.Key(network='litecoin')
+            self.privkey = k.wif()
+        elif (self.coin == 'doge') :
+            k = bitcoinlib.keys.Key(network='dogecoin')
             self.privkey = k.wif()
         elif (self.coin == "eth") :
             #Since ETH is not uxto-based, self.privkey instead stores a random 3-digit identifier.
@@ -141,7 +146,24 @@ class Escrow :
                                }
                 signed = w3.eth.account.sign_transaction(transaction, config.ethpriv)
                 txid = w3.eth.send_raw_transaction(signed.rawTransaction).hex()
-
+            elif (self.coin == 'doge') :
+                while (True) :
+                    k = bitcoinlib.keys.Key(self.privkey, network='dogecoin')
+                    s = bitcoinlib.services.services.Service(network='dogecoin')
+                    uxtos = s.getutxos(address=k.address())
+                    val = bitcoinlib.values.Value(str(self.value - Decimal(config.escrowfee['doge']) - Decimal(1)) + " DOGE")
+                    targetout = bitcoinlib.transactions.Output(network='dogecoin', value=val, address=addr)
+                    feeout = bitcoinlib.transactions.Output(value=bitcoinlib.values.Value(str(config.escrowfee['doge']) + " DOGE"), network='dogecoin', address=config.leftover['doge'])
+                    tx = bitcoinlib.transactions.Transaction(outputs=[targetout, feeout], network='dogecoin', fee=100000000)
+                    if (len(uxtos) == 0) :
+                        continue
+                    for i in uxtos :
+                        tx.add_input(i['txid'], i['output_n'])
+                    tx.sign(keys=k)
+                    tx.verify()
+                    d = s.sendrawtransaction(tx.raw_hex())
+                    txid = d['txid']
+                    break
             return txid
         except (ValueError, TypeError) :
             return None
@@ -206,7 +228,8 @@ class Escrow :
             k = bitcash.Key(self.privkey).address
         elif (self.coin == "ltc") :
             k = bitcoinlib.keys.Key(self.privkey, network='litecoin').address()
-        
+        elif (self.coin == "doge") :
+            k = bitcoinlib.keys.Key(self.privkey, network='dogecoin').address()
         #ETH is handled differently because it requires an identifier
         if (self.coin == "eth") :
             r.redditor(self.sender).message("Escrow funding address", "In order to fund the escrow with ID " + self.id + 
@@ -236,6 +259,16 @@ class Escrow :
                 return False
             else :
                 txs = bitcoinlib.services.services.Service('litecoin').gettransactions(bitcoinlib.keys.Key(self.privkey, network='litecoin').address())
+                for tx in txs :
+                    if (tx.confirmations == 0) :
+                        return False
+                return True
+        elif (self.coin == "doge") :
+            k = bitcoinlib.keys.Key(self.privkey, network='dogecoin')
+            if (Decimal(bitcoinlib.services.services.Service('dogecoin').getbalance(k.address_obj.address)) / Decimal(100000000) < self.value) :
+                return False
+            else :
+                txs = bitcoinlib.services.services.Service('dogecoin').gettransactions(bitcoinlib.keys.Key(self.privkey, network='dogecoin').address())
                 for tx in txs :
                     if (tx.confirmations == 0) :
                         return False
