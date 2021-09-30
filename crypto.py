@@ -127,9 +127,9 @@ class Escrow :
                     for i in uxtos :
                         tx.add_input(i['txid'], i['output_n'])
                     tx.sign(keys=k)
-                    txid = tx.txhash
                     tx.verify()
-                    s.sendrawtransaction(tx.raw_hex())
+                    d = s.sendrawtransaction(tx.raw_hex())
+                    txid = d['txid']
                     break
             elif (self.coin == "eth") :
                 txs = etherscan.get_normal_txs_by_address(config.ethaddr, 0, 9999999999, "asc")
