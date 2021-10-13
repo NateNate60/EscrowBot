@@ -33,7 +33,7 @@ class Escrow :
         #in reality just the hash of the current time + random number
         h = hashlib.sha1()
         h.update((str(time.time()) + str(random.random())).encode('utf-8'))
-        self.id = "c4cid" + h.hexdigest()
+        self.id = "c4cid" + h.hexdigest()[:16]
 
         #state of the escrow. 0 = waiting approval, 1 = waiting deposit, 2 = funded & held, 3 = released, 4 = complete, -1 = refunded
         self.state = 0
