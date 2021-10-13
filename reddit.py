@@ -104,6 +104,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                     escrow.askpayment()
                     db.add(escrow)
                     elist.append(escrow)
+                    message.reply("Joined successfully. The sender has been asked to make the payment." + config.signature)
                     message.mark_read()
                     continue
                 else :
