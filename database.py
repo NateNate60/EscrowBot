@@ -121,12 +121,12 @@ def monitorpayment (r, elist: list, db: Database) -> list :
             continue
         if tx.funded() :
             tx.state = 2
-            r.redditor(tx.sender).message("Escrow fully funded", "The escrow with ID " + tx.id + " has been fully funded. The recipient has been informed to complete the service " +
+            r.redditor(tx.sender).message("Escrow fully funded", "The escrow with ID " + tx.id + " has been fully funded. They money is locked in the escrow until you release the escrow. The recipient has been informed to complete the service " +
                                           "or send the goods as agreed. When and only when you are satisfied that the other party has kept their end of the bargain, reply with " +
-                                          "`!release " + tx.id + "`.\n\n**Do not release the escrow early under any circumstances.** Anyone who directs you to release the escrow before "+
+                                          "`!release`.\n\n**Do not release the escrow early under any circumstances.** Anyone who directs you to release the escrow before "+
                                           "they complete their end of the bargain is a scammer. If you release the escrow, the funds will be immediately made available to the other party for withdrawal." +
                                           " If you encounter any issues or have a dispute, please report the problem to the r/Cash4Cash moderators." + config.signature)
-            r.redditor(tx.recipient).message("Escrow fully funded", "The escrow with ID " + tx.id + " has been fully funded. Please provide the goods or services as agreed. If you wish " +
+            r.redditor(tx.recipient).message("Escrow fully funded", "The escrow with ID " + tx.id + " has been fully funded. The money has been received and is locked until the sender releases the escrow. Please provide the goods or services as agreed. If you wish " +
                                              "to issue a refund to the sender, reply with `!refund " + tx.id +"`. If you refund the escrow. the money will immediately be made available to the other "+ 
                                              "party for withdrawl. If you encounter any issues or have a dispute, please report the problem to the r/Cash4Cash moderators." + config.signature)
             db.add(tx)
