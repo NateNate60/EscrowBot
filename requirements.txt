@@ -3,4 +3,4 @@ bitcash
 web3
 bitcoinlib
 praw
-etherscan
+etherscan-python
