@@ -15,7 +15,8 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
 
     for message in r.inbox.unread() :
         b = message.body
-
+        if (message.body[:2] == "! ") :
+            b = "!" + message.body[2:]
         #New escrow transaction
         if ("--NEW TRANSACTION--" in b) :
             try :
