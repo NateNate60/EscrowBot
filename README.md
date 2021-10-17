@@ -22,18 +22,15 @@ Also, if you're wondering why I only use `bitcoinlib` for Litecoin and not for B
 
 ## Donations welcome!
 
-If I get enough in donations then we probably won't need to collect any escrow fees. I'm not doing this for profit.
-
-- btc: 3BzrZKHv1F5qNZK45vUkZMBZUrpF1vtgD9
-- bch: qzj3km6zfqlul8utf2kepwxncmadp5j80qg7dp0m3g
-- ltc: MWXZLvyL7rE5zarAxz6i34iqwVFJzZ978o
+- btc: 3EBf6eixSLUB3sh5XzsjAFpk6A5rF37X18
+- bch: qp5ne9w8dnnw364vqpz9nknankkw5qsc254qmhr8cz
+- ltc: ltc1qnwydu80eh9l8l2ptasz6as04z30dq5ljampvxj
 - eth: 0xC50840e9fec8d5F6c696896362393a0Ac3d1A8b6
 
 
 ## To-do list
 
 - add XLM support
-- add DOGE support
 - maybe stablecoins too
 
 ## Contact info
