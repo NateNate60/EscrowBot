@@ -12,7 +12,7 @@ Dependencies:
 - Bitcash (`pip3 install bitcash`). Bitcoin Cash library.
 - Bitcoinlib (`pip3 install bitcoinlib`). Used for its Litecoin functionality and fee estimation. The Bitcoin functionality is not actually used
 - Web3 (`pip3 install web3`). Ethereum library
-- Hashlib. IDs are generated using SHA-1 hashes. SHA-1 is faster than SHA-2 and these don't need to be resistent to attacks because they're only used for ID purposes
+- Hashlib. IDs are generated using SHA-256 hashes, then truncated to 16 hex digits (total hash length = 64 bits, still very unlikely to collide but not so long as to be unweildly)
 
 **PLEASE FEEL FREE TO PERUSE MY CODE AND POINT OUT MISTAKES, BUGS, OR SECURITY FLAWS**
 
