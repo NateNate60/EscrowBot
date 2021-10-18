@@ -4,3 +4,4 @@ web3
 bitcoinlib
 praw
 etherscan-python
+uslapi
