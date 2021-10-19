@@ -4,8 +4,22 @@ import praw
 import database
 from decimal import Decimal
 import prawcore
+import atexit
+from uslapi import uslapi
 
 r = praw.Reddit(username = config.username, password = config.password, client_id = config.client_id, client_secret = config.client_secret, user_agent = "Nate'sEscrowBot")
+
+#For interacting with the USL
+usls = uslapi.UniversalScammerList('bot EscrowBot')
+usl = usls.login(config.uslusername, config.uslpassword)
+
+def usllogout():
+    """
+    Logs out of the USL
+    """
+    usls.logout(user)
+#Auto-logout USL upon exit
+atexit.register(usllogout)
 
 
 def checkinbox(r: praw.Reddit, db: database.Database) -> list :
@@ -46,6 +60,8 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                     message.mark_read()
                     continue
                 try :
+                    #list of the USL status of escrow [sender, recipient]
+                    listed = [usls.query(usl, escrow.sender), usls.query(usl, escrow.recipient)]
                     r.redditor(escrow.recipient).message("Invitation to join escrow", escrow.sender + " has invited you to join the escrow with ID " + escrow.id +"\n\n" +
                                                          "The amount to be escrowed: " + str(escrow.value) + ' ' + escrow.coin.upper() + '\n'+
                                                          "If you wish to join the escrow transaction, you must agree to the following terms, as set out by u/" + escrow.sender + ":\n\n" +
@@ -54,11 +70,12 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                                                          "the terms or the amount, simply ignore this message. You can join again later whenever you want.Escrows are subject to a small" +
                                                          " fee in order to help pay for server costs. More info about the escrow and the fee schedule can be found on our [wiki page](https://reddit.com/r/cash4cash/wiki/index/escrow)" +
                                                          " **Note:** This does not mean that the sender is guaranteed not a scammer. The escrow has not been funded and no money has been sent yet." +
+                                                         "\n\n**Warning:** The person who initiated this escrow is a USL-listed scammer. Please exercise caution." * listed[0]["banned"] +
                                                          config.signature)
                     if (escrow.coin == "eth") :
                         message.reply("New escrow transaction opened. We are now waiting for u/" + escrow.recipient + " to agree to the escrow." +
-                                      " This escrow transaction's ID is " + escrow.id + ". **NOTE**: ETH escrow values are rounded to the nearest 0.00001." + config.signature)
-                    message.reply("New escrow transaction opened. We are now waiting for u/" + escrow.recipient + " to agree to the escrow." +
+                                      " This escrow transaction's ID is " + escrow.id + ". **NOTE**: ETH escrow values are rounded to the nearest 0.00001." + "\n\n**Warning:** The person who you're dealing with is a USL-listed scammer. Please exercise caution." * listed[1] + config.signature)
+                    message.reply("New escrow transaction opened. We are now waiting for u/" + escrow.recipient + " to agree to the escrow." + "\n\n**Warning:** The person who you're dealing with is a USL-listed scammer. Please exercise caution." * listed[1]["banned"] +
                                   " This escrow transaction's ID is " + escrow.id + config.signature)
                     
                     db.add(escrow)
