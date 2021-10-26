@@ -21,6 +21,9 @@ Dependencies:
 - Bitcoinlib (`pip3 install bitcoinlib`). Used for its Litecoin functionality and fee estimation. The Bitcoin functionality is not actually used
 - Web3 (`pip3 install web3`). Ethereum library
 - Hashlib. IDs are generated using SHA-256 hashes, then truncated to 16 hex digits (total hash length = 64 bits, still very unlikely to collide but not so long as to be unweildly)
+- PRAW (`pip3 install praw`). The most widely-used Python library to interact with Reddit's API.
+- Etherscan (`pip3 install etherscan-python`). Interacts with [Etherscan](https://etherscan.io) for the purposes of fee estimation on ETH and for looking up transactions and account balances.
+- [USLAPI](https://github.com/Tjstretchalot/uslapi). Warns users if one of the parties is a [USL](https://universalscammerlist.com)-listed scammer.
 
 **PLEASE FEEL FREE TO PERUSE MY CODE AND POINT OUT MISTAKES, BUGS, OR SECURITY FLAWS**
 
