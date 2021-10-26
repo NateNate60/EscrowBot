@@ -17,7 +17,7 @@ def usllogout():
     """
     Logs out of the USL
     """
-    usls.logout(user)
+    usls.logout(usl)
 #Auto-logout USL upon exit
 atexit.register(usllogout)
 
