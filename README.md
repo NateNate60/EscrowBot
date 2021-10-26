@@ -6,6 +6,14 @@ Contact me using the information below! Hosting is provided by me, free of charg
 
 You are also free to clone the code and run it yourself!
 
+## List of supported coins
+
+- Bitcoin (+testnet)
+- Bitcoin Cash
+- Litecoin
+- Ethereum
+- Dogecoin
+
 Dependencies:
 
 - Bit (`pip3 install bit`). Bitcoin library.
