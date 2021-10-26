@@ -35,6 +35,12 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
         #New escrow transaction
         if ("--NEW TRANSACTION--" in b) :
             try :
+                if ("yourtradepartnersusername" in b or "0.12345 BTC/BCH" in b) :
+                    message.reply("It appears you didn't fill out the form correctly. Replace \"yourtradepartnersusername\" with your trade partner's username, without the u/." +
+                                  " For example, to start a new transaction with u/test, replace it with \"test\". Then, replace 0.12345 with the amount of the coin you want, and \"BTC/BCH\"" +
+                                  " with the desired coin. So for example, to start a new escrow where you send 0.01 ETH to u/test, do this:\n\n    --NEW TRANSACTION--\n    Partner: test" +
+                                  "\n    Amount: 0.01 ETH\n    --CONTRACT--\n    u/test agrees to send me one toy Yoda for 0.01 ETH." + config.signature)
+                    continue
                 d = b.split('--CONTRACT--')[0].split('\n')
                 escrow = crypto.Escrow(d[2].split(' ')[2].lower())
                 escrow.contract = b.split('--CONTRACT--')[1]
