@@ -13,7 +13,7 @@ import bitcoinlib
 import praw
 from etherscan import Etherscan
 from decimal import Decimal
-
+import requests
 
 # Global variable section (loud booing in background)
 etherscan = Etherscan(config.etherscankey, net="main")
@@ -25,6 +25,12 @@ class UnsupportedCoin (Exception) :
     Class for an unsupported coin
     """
     pass
+
+def estimatefee () -> int:
+    """
+    Fetches the current recommended BTC feerate (sat/B) from mempool.space
+    """
+    return requests.get("https://mempool.space/api/v1/fees/recommended/").json()['fastestFee']
 
 #Class representing an escrow transaction
 class Escrow :
@@ -95,8 +101,7 @@ class Escrow :
         Send the funds to addr with a given feerate
         """
         if (feerate == 0) :
-            fee = bitcoinlib.services.services.Service(network="bitcoin")
-            feerate = fee.estimatefee(2) // 1000
+            feerate = estimatefee()
         self.lasttime = int(time.time())
         try :
             txid = ""
@@ -175,8 +180,7 @@ class Escrow :
         """
         fee = "1"
         if (self.coin == 'btc') :
-            fee = bitcoinlib.services.services.Service(network="bitcoin")
-            fee = str(fee.estimatefee(2) // 1000)
+            fee = str(estimatefee())
         elif (self.coin == 'eth') :
             fee = etherscan.get_gas_oracle()['ProposeGasPrice']
         
