@@ -238,12 +238,13 @@ class Escrow :
         if (self.coin == "eth") :
             r.redditor(self.sender).message("Escrow funding address", "In order to fund the escrow with ID " + self.id + 
                                             ", please send " + str(self.value) + self.privkey + " " + self.coin.upper() +
-                                            " to " + config.ethaddr + ".\n\n**IMPORTANT**: You must send _exactly_ this amount, after fees. If too little or too much is received," +
+                                            " to " + config.ethaddr + ".\n\n**IMPORTANT**: You must send _exactly_ this amount, after network fees. If too little or too much is received," +
                                             " your payment will not be detected. If you accidentally sent the wrong amount, please reach out to us for help!" + config.signature)
             self.lasttime = int(time.time())
             return
         r.redditor(self.sender).message("Escrow funding address", "In order to fund the escrow with ID " + self.id + ", please send " + str(self.value) + " " + self.coin.upper() +
-                                        " to " + k + config.signature)
+                                        " to " + k + "\n\n**Note:** If you accidentally send too little BTC, you can make another transaction for the difference. Please note that the bot must receive *at least* this amount" + 
+                                        " for it to consider the escrow funded. You can send slightly more than requested if your wallet deducts the network fee from the total." + config.signature)
         self.lasttime = int(time.time())
     def funded (self) :
         """
