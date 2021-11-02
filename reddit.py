@@ -37,7 +37,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             try :
                 if ("yourtradepartnersusername" in b or "0.12345 BTC/BCH" in b) :
                     message.reply("It appears you didn't fill out the form correctly. Replace \"yourtradepartnersusername\" with your trade partner's username, without the u/." +
-                                  " For example, to start a new transaction with u/test, replace it with \"test\". Then, replace 0.12345 with the amount of the coin you want, and \"BTC/BCH\"" +
+                                  " For example, to start a new transaction with u/test, replace it with \"test\".\n\nReplace \"0.12345\" with the amount of the coin you want, and \"BTC/BCH\"" +
                                   " with the desired coin. So for example, to start a new escrow where you send 0.01 ETH to u/test, do this:\n\n    --NEW TRANSACTION--\n    Partner: test" +
                                   "\n    Amount: 0.01 ETH\n    --CONTRACT--\n    u/test agrees to send me one toy Yoda for 0.01 ETH." + config.signature)
                     message.mark_read()
@@ -74,9 +74,9 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                                                          "If you wish to join the escrow transaction, you must agree to the following terms, as set out by u/" + escrow.sender + ":\n\n" +
                                                          escrow.contract + "\n\n" +
                                                          "If you agree to the terms and would like to join the escrow, reply `!join`. If you DO NOT agree to " +
-                                                         "the terms or the amount, simply ignore this message. You can join again later whenever you want.Escrows are subject to a small" +
+                                                         "the terms or the amount, simply ignore this message. You can join again later whenever you want. Escrows are subject to a small" +
                                                          " fee in order to help pay for server costs. More info about the escrow and the fee schedule can be found on our [wiki page](https://reddit.com/r/cash4cash/wiki/index/escrow)" +
-                                                         " **Note:** This does not mean that the sender is guaranteed not a scammer. The escrow has not been funded and no money has been sent yet." +
+                                                         "\n\n**Note:** This does not mean that the sender is guaranteed not a scammer. The escrow has not been funded and no money has been sent yet." +
                                                          "\n\n**Warning:** The person who initiated this escrow is a USL-listed scammer. Please exercise caution." * listed[0]["banned"] +
                                                          config.signature)
                     if (escrow.coin == "eth") :
