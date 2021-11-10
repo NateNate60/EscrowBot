@@ -100,6 +100,8 @@ class Escrow :
         """
         Send the funds to addr with a given feerate
         """
+        if ("[" in addr) : #correct users accidentally providing address in brackets
+            addr = addr[1:-1]
         if (feerate == 0) :
             feerate = estimatefee()
         self.lasttime = int(time.time())
