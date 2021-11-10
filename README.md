@@ -18,7 +18,7 @@ Dependencies:
 
 - Bit (`pip3 install bit`). Bitcoin library.
 - Bitcash (`pip3 install bitcash`). Bitcoin Cash library.
-- Bitcoinlib (`pip3 install bitcoinlib`). Used for its Litecoin functionality and fee estimation. The Bitcoin functionality is not actually used
+- Bitcoinlib (`pip3 install bitcoinlib`). Used for its Litecoin functionality. The Bitcoin functionality is not actually used
 - Web3 (`pip3 install web3`). Ethereum library
 - Hashlib. IDs are generated using SHA-256 hashes, then truncated to 16 hex digits (total hash length = 64 bits, still very unlikely to collide but not so long as to be unweildly)
 - PRAW (`pip3 install praw`). The most widely-used Python library to interact with Reddit's API.
