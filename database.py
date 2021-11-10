@@ -128,7 +128,7 @@ def monitorpayment (r, elist: list, db: Database) -> list :
                                           " If you encounter any issues or have a dispute, please report the problem to the r/Cash4Cash moderators." + config.signature)
             r.redditor(tx.recipient).message("Escrow fully funded", "The escrow with ID " + tx.id + " has been fully funded. The money has been received and is locked until the sender releases the escrow. Please provide the goods or services as agreed. If you wish " +
                                              "to issue a refund to the sender, reply with `!refund " + tx.id +"`. If you refund the escrow. the money will immediately be made available to the other "+ 
-                                             "party for withdrawl. If you encounter any issues or have a dispute, please report the problem to the r/Cash4Cash moderators." + config.signature)
+                                             "party for withdrawal. If you encounter any issues or have a dispute, please report the problem to the r/Cash4Cash moderators." + config.signature)
             db.add(tx)
         else :
             relist.append(tx)
