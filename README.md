@@ -37,12 +37,14 @@ Also, if you're wondering why I only use `bitcoinlib` for Litecoin and not for B
 ## Donations welcome!
 
 - btc: 3EBf6eixSLUB3sh5XzsjAFpk6A5rF37X18
+- lightning (feel free to open a channel!): 033a7fca1cb089b33ac232dd73c2c32aeacffe16319b72bec16208f3a9002e6d17
 - bch: qp5ne9w8dnnw364vqpz9nknankkw5qsc254qmhr8cz
 - ltc: ltc1qnwydu80eh9l8l2ptasz6as04z30dq5ljampvxj
 - eth: 0xC50840e9fec8d5F6c696896362393a0Ac3d1A8b6
 - doge: DTKnpTnn1JNBRZBibF4L7a9WKDtLcU56Ue
 - usdt (trc-20): TDJjy4nRQwpNRFjWg45GZmhbQDaGNUxgEB
 - trx: TDJjy4nRQwpNRFjWg45GZmhbQDaGNUxgEB
+- xmr: 471QNEmNCjx81duY9NkzBcVezM9Hx1i1XMpRSy9PJdAp6Yrfpcg83syV6PZtk6dctgEex48FqXDdj9ejBnphC7SQ5Tu8WYN
 - coinbase: nathanlim2004@gmail.com
 - cash app: $NathanQLim
 

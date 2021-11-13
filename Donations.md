@@ -10,6 +10,7 @@ Server costs are around $11 per month. Escrow fees are used to offset this, but 
 - doge: DTKnpTnn1JNBRZBibF4L7a9WKDtLcU56Ue
 - usdt (trc-20): TDJjy4nRQwpNRFjWg45GZmhbQDaGNUxgEB
 - trx: TDJjy4nRQwpNRFjWg45GZmhbQDaGNUxgEB
+- xmr: 471QNEmNCjx81duY9NkzBcVezM9Hx1i1XMpRSy9PJdAp6Yrfpcg83syV6PZtk6dctgEex48FqXDdj9ejBnphC7SQ5Tu8WYN
 - coinbase (send any crypto!): nathanlim2004@gmail.com
 
 I'll also take Cash App: $NathanQLim
