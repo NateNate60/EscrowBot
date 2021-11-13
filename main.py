@@ -3,6 +3,7 @@ from database import Database, monitorpayment
 from prawcore import exceptions
 import config
 import praw
+import crypto
 
 
 def main () :
@@ -14,6 +15,7 @@ def main () :
             elist += reddit.checkinbox(r, db)
             elist = monitorpayment(r, elist, db)
             reddit.checksub(r, db)
+            crypto.tronstake()
     except (exceptions.ServerError, exceptions.RequestException, exceptions.ResponseException, exceptions.ServerError, praw.exceptions.RedditAPIException) as e :
         print(e)
         db.db.close()

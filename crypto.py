@@ -14,11 +14,14 @@ import praw
 from etherscan import Etherscan
 from decimal import Decimal
 import requests
+import tronpy
+import json
 
 # Global variable section (loud booing in background)
 etherscan = Etherscan(config.etherscankey, net="main")
 w3 = web3.Web3(web3.Web3.HTTPProvider(config.infuraurl))
 r = praw.Reddit(username = config.username, password = config.password, client_id = config.client_id, client_secret = config.client_secret, user_agent = "Nate'sEscrowBot")
+client = tronpy.Tron()
 
 class UnsupportedCoin (Exception) :
     """
@@ -26,11 +29,41 @@ class UnsupportedCoin (Exception) :
     """
     pass
 
-def estimatefee () -> int:
+def estimatefee () -> int :
     """
     Fetches the current recommended BTC feerate (sat/B) from mempool.space
     """
     return requests.get("https://mempool.space/api/v1/fees/recommended/").json()['fastestFee']
+
+def readclaimed () -> list :
+    """
+    Reads a list of claimed txids from file. Returns list of str
+    """
+    with open ("claimed.json", 'r') as f :
+        return json.load(f)
+
+def writeclaimed (txids: list) -> None :
+    """
+    Writes a list of claimed txids to the claimed.json file
+    """
+    with open ("claimed.json", 'w') as f :
+        json.dump(txids, f)
+
+def tronstake () -> None :
+    """
+    Checks the TRON wallet for any unstaked TRX and stakes it for 3 days to get energy.
+    This function will leave 30 TRX unstaked in order to cover network fees if the 
+    energy/bandwidth from staking doesn't cover it.
+
+    There is only a 1% chance this function will actually do anything at all.
+    This is to deal with the API limits.
+    """
+    if (random.random() < 0.99) :
+        return
+    bal = client.get_account(config.tronaddr)['balance']
+    if (bal > 31000000) :
+        #does not attempt to stake if it would stake less than 1 TRX
+        client.trx.freeze_balance(config.tronaddr, bal - 30000000, "ENERGY").build().sign(tronpy.keys.PrivateKey(bytes.fromhex(config.tronpriv))).broadcast()
 
 #Class representing an escrow transaction
 class Escrow :
@@ -46,11 +79,13 @@ class Escrow :
         
         #which coin the escrow is holding (ex. "btc")
         coin = coin[:3]
+        if (coin == "dog") : #doge is 4 letters
+            coin = "doge"
+        if (coin == "usd") : #usdt is 4 letters
+            coin = "usdt"
         if (coin not in config.coins) :
             raise UnsupportedCoin
         else :
-            if (coin == "dog") : #doge is 4 letters
-                coin = "doge"
             self.coin = coin
 
 
@@ -94,6 +129,9 @@ class Escrow :
             self.privkey = '000'
             while (self.privkey == '000') : #identifier should not be 000
                 self.privkey = str(int(random.random() * 1000))
+        elif (self.coin == "usdt") :
+            self.privkey = "000"
+            pass #Privkey not needed for USDT TRC-20
 
 
     def pay (self, addr: str, feerate: int = 0 ) -> str :
@@ -171,6 +209,14 @@ class Escrow :
                     d = s.sendrawtransaction(tx.raw_hex())
                     txid = d['txid']
                     break
+            elif (self.coin == 'usdt') :
+                if (not client.is_base58check_address(addr)) :
+                    raise ValueError #address provided is invalid
+                contract = client.get_contract("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t") #fetch USDT TRC-20 contract. Hard-coded contract address.
+                privkey = tronpy.keys.PrivateKey((bytes.fromhex(config.tronpriv)))
+                tx = (contract.functions.transfer(addr, int(self.value * Decimal(1000000))).with_owner(config.tronaddr).fee_limit(5000000).build().sign(privkey))
+                txid = tx.txid
+                tx.broadcast()
             return txid
         except (ValueError, TypeError) :
             return None
@@ -185,6 +231,8 @@ class Escrow :
             fee = str(estimatefee())
         elif (self.coin == 'eth') :
             fee = etherscan.get_gas_oracle()['ProposeGasPrice']
+        elif (self.coin == "usdt") :
+            fee = "0.00"
         
         message = (str(self.value) + " " + self.coin.upper() + " was released to you from the escrow with ID " + self.id + " You may withdraw the funds using `!withdraw [address]`." +
                   " If you wish to specify a custom feerate, you may do so by using `!withdraw [escrow ID] [address] [feerate]`.\n\n" +
@@ -197,6 +245,8 @@ class Escrow :
             message += " However, if you choose not to specify a feerate, the suggested feerate will be used, which may be different at the time of withdrawal than it is now."
         elif (self.coin == "eth") :
             message += " gw/gas\n\nNote: Custom feerates are currently not supported on ETH. The suggested feerate will always be used. This is because the ETH network requires transactions be confirmed in order."
+        elif (self.coin == "usdt") :
+            message += " USDT\n\n Note: The escrow fee also covers the network fee."
         message += config.signature
         if (sender) :
             r.redditor(self.sender).message("Funds available", message)
@@ -244,8 +294,16 @@ class Escrow :
                                             " your payment will not be detected. If you accidentally sent the wrong amount, please reach out to us for help!" + config.signature)
             self.lasttime = int(time.time())
             return
+        elif (self.coin == "usdt") :
+            r.redditor(self.sender).message("Escrow funding address", "In order to fund the escrow with ID " + self.id + 
+                                            ", please send " + str(self.value) + " " + self.coin.upper() +
+                                            " to " + config.tronaddr + "\n\n**IMPORTANT**: This is a TRON address. Do not send USDT ERC-20 or USDT BEP-20. " +
+                                            "Sending any coin other than USDT TRC-20 will result in loss of funds. You must send _exactly_ this amount. " +
+                                            "If you accidentally send too little or too much, please reach out to us for help!")
+            self.lasttime = int(time.time())
+            return
         r.redditor(self.sender).message("Escrow funding address", "In order to fund the escrow with ID " + self.id + ", please send " + str(self.value) + " " + self.coin.upper() +
-                                        " to " + k + "\n\n**Note:** If you accidentally send too little BTC, you can make another transaction for the difference. Please note that the bot must receive *at least* this amount" + 
+                                        " to " + k + "\n\n**Note:** If you accidentally send too little crypto, you can make another transaction for the difference. Please note that the bot must receive *at least* this amount" + 
                                         " for it to consider the escrow funded. You can send slightly more than requested if your wallet deducts the network fee from the total." + config.signature)
         self.lasttime = int(time.time())
     def funded (self) :
@@ -295,7 +353,19 @@ class Escrow :
                 if (Decimal(value[:7]) == self.value) :
                     return True
             return False
-
+        elif (self.coin == "usdt") :
+            claimed = readclaimed()
+            txs = requests.get('https://apilist.tronscan.org/api/transaction?sort=timestamp&address=' + config.tronaddr).json()
+            for tx in txs['data'] :
+                if (tx['hash'] in claimed or not tx['confirmed']) :
+                    continue
+                if ("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t" in tx['toAddressList']) : #filter out to only USDT transactions
+                    value = Decimal(int(tx['contractData']['data'][-8:], 16)) / Decimal("1000000") #convert hex amount info in data str to Decimal object
+                    if (value == self.value) :
+                        claimed.append(tx['hash']) #this txid is now "claimed" if it is used to mark an escrow as funded
+                        writeclaimed(claimed)
+                        return True
+            return False
 
         
         lk = k.get_balance()
@@ -309,4 +379,3 @@ class Escrow :
             if (i.confirmations == 0) :
                 return False
         return True
-

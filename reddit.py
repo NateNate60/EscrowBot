@@ -93,7 +93,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             except crypto.UnsupportedCoin :
                 reply = "Sorry, that coin is currently not supported. The bot only supports "
                 for coin in config.coins :
-                    reply.append(coin.upper() + " ")
+                    reply += coin.upper() + " "
                 message.reply(reply + "." + config.signature)
             except Exception as e:
                 print(e)
@@ -127,11 +127,20 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                 continue
             if (message.author.name.lower() == escrow.recipient) :
                 if (escrow.state == 0) :
+                    if (escrow.coin == 'usdt') : #if escrow with this value already exists, sub 0.001 USDT until a unique value is found
+                        adjusted = False
+                        while (db.detectduplicate(escrow.value, "usdt")) :
+                            escrow.value -= Decimal('0.001')
+                            adjusted = True
+                        message.reply("Joined successfully. The sender has been asked to make the payment.\n\n " +
+                                      "**Note**: An escrow for this amount already exists in the payment phase. For technical reasons, the amount of this escrow has been slightly reduced by less than 0.01 USDT in order to make the escrow amount unique."*adjusted + 
+                                      config.signature)
+                    else :
+                        message.reply("Joined successfully. The sender has been asked to make the payment." + config.signature)
                     escrow.state += 1
                     escrow.askpayment()
                     db.add(escrow)
                     elist.append(escrow)
-                    message.reply("Joined successfully. The sender has been asked to make the payment." + config.signature)
                     message.mark_read()
                     continue
                 else :

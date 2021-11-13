@@ -73,6 +73,16 @@ class Database :
                 lis.append(self._decode(i))
         return lis
 
+    def detectduplicate (self, amount: Decimal, coin: str) -> bool :
+        """
+        Detect whether an open escrow already exists for the amount and coin specified
+        This is because for account-based coins, we can only have one open escrow transaction at a time for any given amount
+        Completed or failed transactions are ignored.
+        """
+        cursor = self.db.execute("SELECT * FROM transactions WHERE value = " + str(amount) + " AND coin = ? AND state = 1", (coin,))
+        element = cursor.fetchall()
+        return len(element) > 0
+
     def _decode (*args) -> crypto.Escrow :
         """
         Decode a tuple that represents the data fetched by SQLite
