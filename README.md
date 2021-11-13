@@ -13,6 +13,7 @@ You are also free to clone the code and run it yourself!
 - Litecoin
 - Ethereum
 - Dogecoin
+- Tether (USDT TRC-20)
 
 Dependencies:
 
@@ -24,6 +25,8 @@ Dependencies:
 - PRAW (`pip3 install praw`). The most widely-used Python library to interact with Reddit's API.
 - Etherscan (`pip3 install etherscan-python`). Interacts with [Etherscan](https://etherscan.io) for the purposes of fee estimation on ETH and for looking up transactions and account balances.
 - [USLAPI](https://github.com/Tjstretchalot/uslapi). Warns users if one of the parties is a [USL](https://universalscammerlist.com)-listed scammer.
+- Tronpy (`pip3 install tronpy`). TRON library.
+- Requests (`pip3 install requests`). Used to grab info from Mempool.space and Tronscan.
 
 **PLEASE FEEL FREE TO PERUSE MY CODE AND POINT OUT MISTAKES, BUGS, OR SECURITY FLAWS**
 
@@ -38,6 +41,8 @@ Also, if you're wondering why I only use `bitcoinlib` for Litecoin and not for B
 - ltc: ltc1qnwydu80eh9l8l2ptasz6as04z30dq5ljampvxj
 - eth: 0xC50840e9fec8d5F6c696896362393a0Ac3d1A8b6
 - doge: DTKnpTnn1JNBRZBibF4L7a9WKDtLcU56Ue
+- usdt (trc-20): TDJjy4nRQwpNRFjWg45GZmhbQDaGNUxgEB
+- trx: TDJjy4nRQwpNRFjWg45GZmhbQDaGNUxgEB
 - coinbase: nathanlim2004@gmail.com
 - cash app: $NathanQLim
 
