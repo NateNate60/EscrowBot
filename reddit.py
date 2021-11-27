@@ -367,7 +367,6 @@ def checksub(r: praw.Reddit, db: database.Database) :
                     db.add(escrow)
                 except Exception:
                     comment.reply("An error occured while sending the invitation to the recipient. Please ensure that the recipient actually exists and you typed their username correctly. Do not include the u/ in their username.")
-                    continue
         commentsrepliedto.append(comment.id)
     with open ('comments.txt', 'w') as f :
         write = ""
