@@ -320,14 +320,17 @@ class Escrow :
             k = bitcash.Key(self.privkey)
         elif (self.coin == "ltc") :
             k = bitcoinlib.keys.Key(self.privkey, network='litecoin')
-            if (Decimal(bitcoinlib.services.services.Service('litecoin').getbalance(k.address_obj.address)) / Decimal(100000000) < self.value) :
+            txs = bitcoinlib.services.services.Service('litecoin').gettransactions(k.address())
+            value = 0
+            for tx in txs :
+                if (tx.confirmations == 0) :
+                    continue
+                for outs in tx.as_dict()['outputs'] :
+                    value += outs['value'] if outs['address'] == k.address() else 0
+            if (Decimal(value) / Decimal(100000000) < self.value) :
                 return False
-            else :
-                txs = bitcoinlib.services.services.Service('litecoin').gettransactions(bitcoinlib.keys.Key(self.privkey, network='litecoin').address())
-                for tx in txs :
-                    if (tx.confirmations == 0) :
-                        return False
-                return True
+            return True
+
         elif (self.coin == "doge") :
             k = bitcoinlib.keys.Key(self.privkey, network='dogecoin')
             if (Decimal(bitcoinlib.services.services.Service('dogecoin').getbalance(k.address_obj.address)) / Decimal(100000000) < self.value) :
