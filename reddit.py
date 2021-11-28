@@ -341,15 +341,17 @@ def checksub(r: praw.Reddit, db: database.Database) :
                     comment.reply("An error has occured. Please check the syntax and try again." + config.signature)
                 try :
                     if (escrow.coin != 'eth') :
-                        r.redditor(escrow.recipient).message("Invitation to join escrow", escrow.sender + " has invited you to join the escrow with ID " + escrow.id +"\n\n" +
-                                                            "The amount to be escrowed: " + str(escrow.value) + ' ' + escrow.coin.upper() + '\n\n'+
-                                                            "If you wish to join the escrow transaction, you must agree to the following terms, as set out by u/" + escrow.sender + ":\n\n" +
-                                                            escrow.contract + "\n\n" +
-                                                            "If you agree to the terms and would like to join the escrow, reply `!join`. If you DO NOT agree to " +
-                                                            "the terms or the amount, simply ignore this message. You can join again later whenever you want. Escrows are subject to a small" +
-                                                            " fee in order to help pay for server costs. More info about the escrow and the fee schedule can be found on our [wiki page](https://reddit.com/r/cash4cash/wiki/index/escrow)" +
-                                                            "\n\n**Note:** This does not mean that the sender is guaranteed not a scammer. The escrow has not been funded and no money has been sent yet." +
-                                                            config.signature)
+                        m = (
+                        "Invitation to join escrow", escrow.sender + " has invited you to join the escrow with ID " + escrow.id + "\n\n" +
+                        "The amount to be escrowed: " + str(escrow.value) + ' ' + escrow.coin.upper() + '\n\n'+
+                        "If you wish to join the escrow transaction, you must agree to the following terms, as set out by u/" + escrow.sender + ":\n\n" +
+                        escrow.contract + "\n\n" +
+                        "If you agree to the terms and would like to join the escrow, reply `!join`. If you DO NOT agree to " +
+                        "the terms or the amount, simply ignore this message. You can join again later whenever you want. Escrows are subject to a small" +
+                        " fee in order to help pay for server costs. More info about the escrow and the fee schedule can be found on our [wiki page](https://reddit.com/r/cash4cash/wiki/index/escrow)" +
+                        "\n\n**Note:** This does not mean that the sender is guaranteed not a scammer. The escrow has not been funded and no money has been sent yet." +
+                        config.signature)
+                        r.redditor(escrow.recipient).message(m[0], m[1])
                     else :
                         r.redditor(escrow.recipient).message("Invitation to join escrow", escrow.sender + " has invited you to join the escrow with ID " + escrow.id +"\n\n" +
                                                             "The amount to be escrowed: " + str(escrow.value) + ' ' + escrow.coin.upper() + '\n\n'+
@@ -359,11 +361,11 @@ def checksub(r: praw.Reddit, db: database.Database) :
                                                             "the terms or the amount, simply ignore this message. You can join again later whenever you want. Escrows are subject to a small" +
                                                             " fee in order to help pay for server costs. More info about the escrow and the fee schedule can be found on our [wiki page](https://reddit.com/r/cash4cash/wiki/index/escrow)" +
                                                             "Since this is an ETH escrow, please be aware that " +
-                                                            "custom feerates are not supported yet when you withdraw your funds.\n\n"
+                                                            "custom feerates are not supported yet when you withdraw your funds.\n\n" +
                                                             " **Note:** This does not mean that the sender is guaranteed not a scammer. The escrow has not been funded and no money has been sent yet." +
                                                             config.signature)
-                    comment.reply("New escrow transaction opened. We are now waiting for u/" + escrow.recipient + " to agree to the escrow." +
-                                  " This escrow transaction's ID is " + escrow.id + config.signature)
+                    reply = "New escrow transaction opened. We are now waiting for u/" + escrow.recipient + " to agree to the escrow. This escrow transaction's ID is " + escrow.id + config.signature
+                    comment.reply(reply)
                     db.add(escrow)
                 except Exception:
                     comment.reply("An error occured while sending the invitation to the recipient. Please ensure that the recipient actually exists and you typed their username correctly. Do not include the u/ in their username.")
