@@ -121,11 +121,11 @@ def monitorpayment (r, elist: list, db: Database) -> list :
                                           " within 24 hours. This escrow transaction is now closed. You can start a new transaction " + 
                                           "[here](https://reddit.com/message/compose?to=C4C_Bot&subject=Escrow&message=--NEW%20TRANSACTION--%0APartner:%20yourtradepartnersusername%0AAmount:%200.12345%20BTC/BCH%0A--CONTRACT--%0AWrite%20whatever%20you%20want%20here.%20What%20are%20the%20parties%20agreeing%20to%3F%0AAbout%20this%20service:%20https://www.reddit.com/r/Cash4Cash/wiki/edit/index/escrow)." + 
                                           " If you did send payment and the transaction has not confirmed for some reason, please contact the moderators of r/Cash4Cash." + 
-                                          config.signature)
+                                          config.signature())
             r.redditor(tx.recipient).message("Escrow funding failed", "The sender for the escrow with ID " + tx.id + " did not make payment " +
                                              "within 24 hours or their payment did not confirm in time. The transaction has been cancelled. "+
                                              "If they did send payment, but it was not detected, please contact the mods of r/Cash4Cash." +
-                                             config.signature)
+                                             config.signature())
             tx.state = -9
             db.add(tx)
             continue
@@ -135,10 +135,10 @@ def monitorpayment (r, elist: list, db: Database) -> list :
                                           "or send the goods as agreed. When and only when you are satisfied that the other party has kept their end of the bargain, reply with " +
                                           "`!release`.\n\n**Do not release the escrow early under any circumstances.** Anyone who directs you to release the escrow before "+
                                           "they complete their end of the bargain is a scammer. If you release the escrow, the funds will be immediately made available to the other party for withdrawal." +
-                                          " If you encounter any issues or have a dispute, please report the problem to the r/Cash4Cash moderators." + config.signature)
+                                          " If you encounter any issues or have a dispute, please report the problem to the r/Cash4Cash moderators." + config.signature())
             r.redditor(tx.recipient).message("Escrow fully funded", "The escrow with ID " + tx.id + " has been fully funded. The money has been received and is locked until the sender releases the escrow. Please provide the goods or services as agreed. If you wish " +
                                              "to issue a refund to the sender, reply with `!refund " + tx.id +"`. If you refund the escrow. the money will immediately be made available to the other "+ 
-                                             "party for withdrawal. If you encounter any issues or have a dispute, please report the problem to the r/Cash4Cash moderators." + config.signature)
+                                             "party for withdrawal. If you encounter any issues or have a dispute, please report the problem to the r/Cash4Cash moderators." + config.signature())
             db.add(tx)
         else :
             relist.append(tx)
