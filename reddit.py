@@ -2,7 +2,7 @@ import crypto
 import config
 import praw
 import database
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 import prawcore
 import atexit
 from uslapi import uslapi
@@ -293,7 +293,7 @@ def checksub(r: praw.Reddit, db: database.Database) :
         s = f.read()
         commentsrepliedto = s.split('\n')
         try :
-            while (True) :
+            while ('' in commentsrepliedto) :
                 commentsrepliedto.remove('')
         except ValueError :
             pass
@@ -337,6 +337,8 @@ def checksub(r: praw.Reddit, db: database.Database) :
                     escrow.value = Decimal(b[0].split(' ')[2])
                 except crypto.UnsupportedCoin :
                     comment.reply(b[0].split(' ')[2] + " is not a supported coin type.")
+                except InvalidOperation :
+                    comment.reply("Invalid amount. Please make sure the amount (" + b[0].split(' ')[2] + ") is correct and is a number.")
                 except Exception :
                     comment.reply("An error has occured. Please check the syntax and try again." + config.signature())
                 try :
