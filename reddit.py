@@ -341,6 +341,7 @@ def checksub(r: praw.Reddit, db: database.Database) :
                     comment.reply("Invalid amount. Please make sure the amount (" + b[0].split(' ')[2] + ") is correct and is a number.")
                 except Exception :
                     comment.reply("An error has occured. Please check the syntax and try again." + config.signature())
+                reply = ""
                 try :
                     if (escrow.coin != 'eth') :
                         m = (
@@ -367,10 +368,10 @@ def checksub(r: praw.Reddit, db: database.Database) :
                                                             " **Note:** This does not mean that the sender is guaranteed not a scammer. The escrow has not been funded and no money has been sent yet." +
                                                             config.signature())
                     reply = "New escrow transaction opened. We are now waiting for u/" + escrow.recipient + " to agree to the escrow. This escrow transaction's ID is " + escrow.id + config.signature()
-                    comment.reply(reply)
                     db.add(escrow)
                 except Exception:
-                    comment.reply("An error occured while sending the invitation to the recipient. Please ensure that the recipient actually exists and you typed their username correctly. Do not include the u/ in their username.")
+                    reply = "An error occured while sending the invitation to the recipient. Please ensure that the recipient actually exists and you typed their username correctly. Do not include the u/ in their username." + config.signature()
+                comment.reply(reply)
         commentsrepliedto.append(comment.id)
     with open ('comments.txt', 'w') as f :
         write = ""
