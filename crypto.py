@@ -360,11 +360,11 @@ class Escrow :
             claimed = readclaimed()
             txs = requests.get('https://apilist.tronscan.org/api/transaction?sort=timestamp&address=' + config.tronaddr).json()
             for tx in txs['data'] :
-                if (tx['hash'] in claimed or not tx['confirmed']) :
+                if (tx['hash'] in claimed or not tx['confirmed'] or tx['ownerAddress'] == config.tronaddr):
                     continue
                 if ("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t" in tx['toAddressList']) : #filter out to only USDT transactions
                     value = Decimal(int(tx['contractData']['data'][-8:], 16)) / Decimal("1000000") #convert hex amount info in data str to Decimal object
-                    if (value == self.value) :
+                    if (value == self.value and tx['contractRet'] == 'SUCCESS') :
                         claimed.append(tx['hash']) #this txid is now "claimed" if it is used to mark an escrow as funded
                         writeclaimed(claimed)
                         return True
