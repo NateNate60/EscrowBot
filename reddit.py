@@ -77,7 +77,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                                                          "the terms or the amount, simply ignore this message. You can join again later whenever you want. Escrows are subject to a small" +
                                                          " fee in order to help pay for server costs. More info about the escrow and the fee schedule can be found on our [wiki page](https://reddit.com/r/cash4cash/wiki/index/escrow)" +
                                                          "\n\n**Note:** This does not mean that the sender is guaranteed not a scammer. The escrow has not been funded and no money has been sent yet." +
-                                                         "\n\n**Note:** This escrow is for USDT TRC-20."*(escrow.coin == 'usdt' +
+                                                         "\n\n**Note:** This escrow is for USDT TRC-20."*(escrow.coin == 'usdt') +
                                                          "\n\n**Warning:** The person who initiated this escrow is listed on the Universal Scammer List. Please exercise caution and proceed at your own risk." * listed[0]["banned"] +
                                                          config.signature())
                     if (escrow.coin == "eth") :
