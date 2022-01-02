@@ -66,8 +66,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             try :
                 if ("yourtradepartnersusername" in b or "0.12345 BTC/BCH" in b) :
                     #start interactive mode
-                    message.reply("**Interactive mode**: We could not automatically detect the amount of the escrow or your trade partner's username." +
-                                  " Please reply with the username of the person you'd like to start an escrow transaction with, including the u/. " +
+                    message.reply("**Interactive mode**: Please reply with the username of the person you'd like to start an escrow transaction with, including the u/. " +
                                   "For example, if your trade partner's username is u/test, reply to this message with `u/test`." + config.signature())
                     message.mark_read()
                     continue
