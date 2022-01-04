@@ -312,17 +312,17 @@ class Escrow :
         return True
 
 
-    def estimatefee (self) -> str :
+    def estimatefee (self) -> int :
         """
         Estimate the fee for the outgoing transaction for the escrow.
         """
-        fee = "1"
+        fee = 1
         if (self.coin == 'btc') :
-            fee = str(requests.get("https://mempool.space/api/v1/fees/recommended/").json()['fastestFee'])
+            fee = int(requests.get("https://mempool.space/api/v1/fees/recommended/").json()['fastestFee'])
         elif (self.coin == 'eth') :
-            fee = str(etherscan.get_gas_oracle()['ProposeGasPrice'])
+            fee = int(etherscan.get_gas_oracle()['ProposeGasPrice'])
         elif (self.coin == "usdt") :
-            fee = "0.00"
+            fee = 0
         return fee
 
 

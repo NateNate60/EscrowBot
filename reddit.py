@@ -427,7 +427,7 @@ def notifyavailable (escrow: crypto.Escrow, sender: bool = False) :
         Notify the user of the availability of funds. sender is whether the funds are released to the sender, defaulting to False,
         which releases to recipient
         """
-        fee = escrow.estimatefee()
+        fee = str(escrow.estimatefee())
         message = (str(escrow.value) + " " + escrow.coin.upper() + " was released to you from the escrow with ID " + escrow.id + " You may withdraw the funds using `!withdraw [address]`." +
                   " If you wish to specify a custom feerate, you may do so by using `!withdraw [escrow ID] [address] [feerate]`.\n\n" +
                   "    ESCROW VALUE: " + str(escrow.value) + " " + escrow.coin.upper() + '\n' +
