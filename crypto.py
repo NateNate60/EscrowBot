@@ -10,7 +10,6 @@ import random
 import config
 import web3
 import bitcoinlib
-import praw
 from etherscan import Etherscan
 from decimal import Decimal
 import requests
@@ -20,7 +19,6 @@ import json
 # Global variable section (loud booing in background)
 etherscan = Etherscan(config.etherscankey, net="main")
 w3 = web3.Web3(web3.Web3.HTTPProvider(config.infuraurl))
-r = praw.Reddit(username = config.username, password = config.password, client_id = config.client_id, client_secret = config.client_secret, user_agent = "Nate'sEscrowBot")
 client = tronpy.Tron()
 
 class UnsupportedCoin (Exception) :
@@ -29,11 +27,6 @@ class UnsupportedCoin (Exception) :
     """
     pass
 
-def estimatefee () -> int :
-    """
-    Fetches the current recommended BTC feerate (sat/B) from mempool.space
-    """
-    return requests.get("https://mempool.space/api/v1/fees/recommended/").json()['fastestFee']
 
 def readclaimed () -> list :
     """
@@ -141,7 +134,7 @@ class Escrow :
         if ("[" in addr) : #correct users accidentally providing address in brackets
             addr = addr[1:-1]
         if (feerate == 0) :
-            feerate = estimatefee()
+            feerate = self.estimatefee()
         self.lasttime = int(time.time())
         try :
             txid = ""
@@ -224,91 +217,24 @@ class Escrow :
         except (ValueError, TypeError) :
             return None
 
-    def __notifyavailable (self, sender: bool = False) :
-        """
-        Notify the user of the availability of funds. sender is whether the funds are released to the sender, defaulting to False,
-        which releases to recipient
-        """
-        fee = "1"
-        if (self.coin == 'btc') :
-            fee = str(estimatefee())
-        elif (self.coin == 'eth') :
-            fee = etherscan.get_gas_oracle()['ProposeGasPrice']
-        elif (self.coin == "usdt") :
-            fee = "0.00"
-        
-        message = (str(self.value) + " " + self.coin.upper() + " was released to you from the escrow with ID " + self.id + " You may withdraw the funds using `!withdraw [address]`." +
-                  " If you wish to specify a custom feerate, you may do so by using `!withdraw [escrow ID] [address] [feerate]`.\n\n" +
-                  "    ESCROW VALUE: " + str(self.value) + " " + self.coin.upper() + '\n' +
-                  "    ESCROW FEE: " + str(Decimal(config.escrowfee[self.coin])) + " " + self.coin.upper() + '\n' +
-                  "    TOTAL AVAILABLE (before network fees): " + str(self.value - Decimal(config.escrowfee[self.coin])) + '\n\n' +
-                  "    RECOMMENDED NETWORK FEE: " + fee)
-        if (self.coin in ['btc', 'ltc', 'bch']) :
-            message += " sat/B\n\nNote: You don't have to use the suggested network fee on BTC. You can specify however high (or low) of a fee as you want."
-            message += " However, if you choose not to specify a feerate, the suggested feerate will be used, which may be different at the time of withdrawal than it is now."
-        elif (self.coin == "eth") :
-            message += " gw/gas\n\nNote: Custom feerates are currently not supported on ETH. The suggested feerate will always be used. This is because the ETH network requires transactions be confirmed in order."
-        elif (self.coin == "usdt") :
-            message += " USDT\n\n Note: The escrow fee also covers the network fee."
-        message += config.signature()
-        if (sender) :
-            r.redditor(self.sender).message("Funds available", message)
-        else :
-            r.redditor(self.recipient).message("Funds available", message)
-
 
     def refund (self) :
         """
         Mark the escrow as refunded. The sender will be able to withdraw their funds.
         """
         self.state = -1
-        self.lasttime = int(time.time())
-        self.__notifyavailable(True)
+        self.bumptime()
+        
 
     def release (self) :
         """
         Mark the escrow as released. The recipient will be able to withdraw their funds.config
         """
-        self.lasttime = int(time.time())
+        self.bumptime()
         self.state = 3
-        self.__notifyavailable()
 
-    def askpayment (self) :
-        """
-        Ask the sender to fund the escrow
-        """
-        k = None
-        if (self.coin == "btc") :
-            if (config.testnet) :
-                k = bit.PrivateKeyTestnet(self.privkey).segwit_address
-            else :
-                k = bit.Key(self.privkey).segwit_address
-        elif (self.coin == "bch") :
-            k = bitcash.Key(self.privkey).address
-        elif (self.coin == "ltc") :
-            k = bitcoinlib.keys.Key(self.privkey, network='litecoin').address()
-        elif (self.coin == "doge") :
-            k = bitcoinlib.keys.Key(self.privkey, network='dogecoin').address()
-        #ETH is handled differently because it requires an identifier
-        if (self.coin == "eth") :
-            r.redditor(self.sender).message("Escrow funding address", "In order to fund the escrow with ID " + self.id + 
-                                            ", please send " + str(self.value) + self.privkey + " " + self.coin.upper() +
-                                            " to " + config.ethaddr + ".\n\n**IMPORTANT**: You must send _exactly_ this amount, after network fees. If too little or too much is received," +
-                                            " your payment will not be detected. If you accidentally sent the wrong amount, please reach out to us for help!" + config.signature())
-            self.lasttime = int(time.time())
-            return
-        elif (self.coin == "usdt") :
-            r.redditor(self.sender).message("Escrow funding address", "In order to fund the escrow with ID " + self.id + 
-                                            ", please send " + str(self.value) + " " + self.coin.upper() +
-                                            " to " + config.tronaddr + "\n\n**IMPORTANT**: This is a TRON address. Do not send USDT ERC-20 or USDT BEP-20. " +
-                                            "Sending any coin other than USDT TRC-20 will result in loss of funds. You must send _exactly_ this amount. " +
-                                            "If you accidentally send too little or too much, please reach out to us for help!")
-            self.lasttime = int(time.time())
-            return
-        r.redditor(self.sender).message("Escrow funding address", "In order to fund the escrow with ID " + self.id + ", please send " + str(self.value) + " " + self.coin.upper() +
-                                        " to " + k + "\n\n**Note:** If you accidentally send too little crypto, you can make another transaction for the difference. Please note that the bot must receive *at least* this amount" + 
-                                        " for it to consider the escrow funded. You can send slightly more than requested if your wallet deducts the network fee from the total." + config.signature())
-        self.lasttime = int(time.time())
+
+    
     def funded (self) :
         """
         Returns whether the escrow is funded
@@ -373,7 +299,6 @@ class Escrow :
                         return True
             return False
 
-        
         lk = k.get_balance()
         if (Decimal(k.get_balance()) / Decimal('100000000') < self.value) :
             return False
@@ -385,3 +310,47 @@ class Escrow :
             if (i.confirmations == 0) :
                 return False
         return True
+
+
+    def estimatefee (self) -> str :
+        """
+        Estimate the fee for the outgoing transaction for the escrow.
+        """
+        fee = "1"
+        if (self.coin == 'btc') :
+            fee = str(requests.get("https://mempool.space/api/v1/fees/recommended/").json()['fastestFee'])
+        elif (self.coin == 'eth') :
+            fee = str(etherscan.get_gas_oracle()['ProposeGasPrice'])
+        elif (self.coin == "usdt") :
+            fee = "0.00"
+        return fee
+
+
+    def getaddress (self) -> str :
+        """
+        Fetches the crypto address associated with an escrow transaction.
+        """
+        k = ""
+        if (self.coin == "btc") :
+            if (config.testnet) :
+                k = bit.PrivateKeyTestnet(self.privkey).segwit_address
+            else :
+                k = bit.Key(self.privkey).segwit_address
+        elif (self.coin == "bch") :
+            k = bitcash.Key(self.privkey).address
+        elif (self.coin == "ltc") :
+            k = bitcoinlib.keys.Key(self.privkey, network='litecoin').address()
+        elif (self.coin == "doge") :
+            k = bitcoinlib.keys.Key(self.privkey, network='dogecoin').address()
+        elif (self.coin == "eth") :
+            k = config.ethaddr
+        elif (self.coin == "usdt") :
+            k = config.tronaddr
+        return k
+
+    
+    def bumptime (self) :
+        """
+        Update the escrow transaction's last-interacted-with time to the current time
+        """
+        self.lasttime = int(time.time())
