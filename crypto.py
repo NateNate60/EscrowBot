@@ -228,7 +228,7 @@ class Escrow :
 
     def release (self) :
         """
-        Mark the escrow as released. The recipient will be able to withdraw their funds.config
+        Mark the escrow as released. The recipient will be able to withdraw their funds.
         """
         self.bumptime()
         self.state = 3
