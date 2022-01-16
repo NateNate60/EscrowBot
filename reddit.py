@@ -331,7 +331,7 @@ def checksub(r: praw.Reddit, db: database.Database) :
 
     for comment in r.subreddit(config.subreddit).comments(limit=1000) :
         try :
-            if (comment.id in commentsrepliedto or comment.author.name == r.user.me().name) :
+            if (comment.id in commentsrepliedto or comment.author.name == r.user.me().name or comment.author.name == "AutoModerator") :
                 continue
         except AttributeError :
             continue
@@ -374,6 +374,8 @@ def checksub(r: praw.Reddit, db: database.Database) :
                     comment.reply("An error has occured. Please check the syntax and try again." + config.signature())
                 reply = ""
                 try :
+                    if (escrow.contract == "") :
+                        escrow.contract = "*The sender did not supply any contract terms.*"
                     if (escrow.coin != 'eth') :
                         m = (
                         "Invitation to join escrow", escrow.sender + " has invited you to join the escrow with ID " + escrow.id + "\n\n" +
@@ -400,10 +402,15 @@ def checksub(r: praw.Reddit, db: database.Database) :
                                                             " **Note:** This does not mean that the sender is guaranteed not a scammer. The escrow has not been funded and no money has been sent yet." +
                                                             config.signature())
                     reply = "New escrow transaction opened. We are now waiting for u/" + escrow.recipient + " to agree to the escrow. This escrow transaction's ID is " + escrow.id + config.signature()
+                    if (escrow.contract == "*The sender did not supply any contract terms.*") :
+                        reply += "\n\nTip: You can add a \"contract\" on a separate line after the line containing `!escrow`. The recipient will be asked to agree to the contract before joining the escrow."
                     db.add(escrow)
                 except Exception:
                     reply = "An error occured while sending the invitation to the recipient. Please ensure that the recipient actually exists and you typed their username correctly. Do not include the u/ in their username." + config.signature()
-                comment.reply(reply)
+                try :
+                    comment.reply(reply)
+                except praw.exceptions.RedditAPIException :
+                    comment.author.message('Escrow transaction opened', "Due to Reddit rate limits, I couldn't directly reply to your comment. You can help with this by upvoting some of the bot's comments to give it more karma.\n\n" + reply)
         commentsrepliedto.append(comment.id)
     with open ('comments.txt', 'w') as f :
         write = ""
