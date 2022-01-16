@@ -43,10 +43,10 @@ class Database :
         Add an escrow transaction to the database
         Overwrite existing records
         """
-        if (escrow.coin == "eth") :
-            escrow.value = Decimal(str(escrow.value)[:7])
         if (escrow == None) :
             return
+        if (escrow.coin == "eth") :
+            escrow.value = Decimal(str(escrow.value)[:7])
         print ("adding", escrow.id)
         self.db.execute("DELETE FROM transactions WHERE id=?;", (escrow.id,))
         self.db.execute("INSERT INTO transactions VALUES (\"" + escrow.id + "\",\"" + escrow.sender + 
