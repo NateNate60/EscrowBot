@@ -200,7 +200,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                 continue
             escrow = db.lookup(m[1])
             if (escrow == None) :
-                message.reply("The provided escrow ID (" + m[1] + ") does not exist. Escrow IDs begin with \"c4cid\"." + config.signature())
+                message.reply("The provided escrow ID (`" + m[1] + "`) does not exist. Escrow IDs begin with \"c4cid\"." + config.signature())
                 message.mark_read()
                 continue
             if (escrow.state != 2) :
@@ -262,7 +262,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                 db.add(escrow)
                 message.reply("Successfully refunded." + config.signature())
             else :
-                message.reply("You are not authorised to refund that escrow. Only the recipient may release the escrow." + config.signature())
+                message.reply("You are not authorised to refund that escrow. Only the recipient may release the escrow. If you are the sender, please note that this is not a bug; it prevents people from sending the money and then refunding it to themselves." + config.signature())
             message.mark_read()
         #Withdraw funds from an escrow
         elif ("!withdraw" in b.lower()) :
@@ -438,16 +438,16 @@ def notifyavailable (escrow: crypto.Escrow, sender: bool = False) :
         message = (str(escrow.value) + " " + escrow.coin.upper() + " was released to you from the escrow with ID " + escrow.id + " You may withdraw the funds using `!withdraw [address]`." +
                   " If you wish to specify a custom feerate, you may do so by using `!withdraw [escrow ID] [address] [feerate]`.\n\n" +
                   "    ESCROW VALUE: " + str(escrow.value) + " " + escrow.coin.upper() + '\n' +
-                  "    ESCROW FEE: " + str(Decimal(config.escrowfee[escrow.coin])) + " " + escrow.coin.upper() + '\n' +
-                  "    TOTAL AVAILABLE (before network fees): " + str(escrow.value - Decimal(config.escrowfee[escrow.coin])) + '\n\n' +
+                  "    ESCROW FEE  : " + str(Decimal(config.escrowfee[escrow.coin])) + " " + escrow.coin.upper() + '\n' +
+                  "    AVAILABLE   : " + str(escrow.value - Decimal(config.escrowfee[escrow.coin])) + ' ' + escrow.coin.upper() + '\n\n' +
                   "    RECOMMENDED NETWORK FEE: " + fee)
         if (escrow.coin in ['btc', 'ltc', 'bch']) :
-            message += " sat/B\n\nNote: You don't have to use the suggested network fee on BTC. You can specify however high (or low) of a fee as you want."
+            message += " sat/B\n\n**Note:** You don't have to use the suggested network fee on BTC. You can specify however high (or low) of a fee as you want."
             message += " However, if you choose not to specify a feerate, the suggested feerate will be used, which may be different at the time of withdrawal than it is now."
         elif (escrow.coin == "eth") :
-            message += " gw/gas\n\nNote: Custom feerates are currently not supported on ETH. The suggested feerate will always be used. This is because the ETH network requires transactions be confirmed in order."
+            message += " gw/gas\n\n**Note:** Custom feerates are currently not supported on ETH. The suggested feerate will always be used. This is because the ETH network requires transactions be confirmed in order."
         elif (escrow.coin == "usdt") :
-            message += " USDT\n\n Note: The escrow fee also covers the network fee."
+            message += " USDT\n\n**Note:** The escrow fee also covers the network fee."
         message += config.signature()
         if (sender) :
             r.redditor(escrow.sender).message("Funds available", message)
@@ -473,7 +473,10 @@ def askpayment (escrow: crypto.Escrow) -> str :
                                             "Sending any coin other than USDT TRC-20 will result in loss of funds. You must send _exactly_ this amount. " +
                                             "If you accidentally send too little or too much, please reach out to us for help!")
             return
-        r.redditor(escrow.sender).message("Escrow funding address", "In order to fund the escrow with ID " + escrow.id + ", please send " + str(escrow.value) + " " + escrow.coin.upper() +
-                                        " to " + escrow.getaddress() + "\n\n**Note:** If you accidentally send too little crypto, you can make another transaction for the difference. Please note that the bot must receive *at least* this amount" + 
-                                        " for it to consider the escrow funded. You can send slightly more than requested if your wallet deducts the network fee from the total." + config.signature())
+        r.redditor(escrow.sender).message("Escrow funding address", "In order to fund the escrow with ID " + escrow.id + " please send " + str(escrow.value) + " " + escrow.coin.upper() +
+                                        " to " + escrow.getaddress() + "\n\n**Note:** If you send crypto and the bot is not recognising it, please make sure you sent the correct amount." +
+                                        " Verify that the amount the bot received *after network fees* is equal to or greater than " + str(escrow.value) + " " + escrow.coin.upper() +
+                                        ". If you accidentally sent too little (or your wallet deducted a network fee from the total), you may send another transaction to cover the difference." +
+                                        " If you know that your wallet deducts the network fee from the total, you can send a little bit more crypto than requested to mitigate this."
+                                        + config.signature())
         
