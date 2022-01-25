@@ -43,20 +43,23 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             message.mark_read()
             continue
         if (len(b.split()) == 2) :
-            parent = r.inbox.message(message.parent_id[3:])
-            if ("**Interactive mode**" in parent.body) :
-                try :
-                    if (b.split()[1].lower() not in config.coins) :
-                        raise InvalidOperation
-                    Decimal(b.split()[0])
-                    message.reply("**Interactive mode**: Your trade partner is " + parent.body.split()[6] + " and you will send " + message.body +
-                                  " into the escrow.\n\n- If everything is *correct*, reply \"done\".\n- If the name of your trade parter is *not correct*, " +
-                                  "reply with the username of your trade partner, including the u/ (such as u/test).\n- If the amount of the escrow is *not " +
-                                  "correct*, please reply with the amount you will send into the escrow (such as `0.75 LTC`)." + config.signature())
-                except InvalidOperation :
-                    message.reply("**Interactive mode**: Your trade partner is " + parent.body.split()[6] + "\n\nWe couldn't detect the amount of the escrow." +
-                                  " Please reply with the amount of crypto that you will send into the escrow, such as `0.05 ETH`." + config.signature())
-                message.mark_read()
+            try :
+                parent = r.inbox.message(message.parent_id[3:])
+                if ("**Interactive mode**" in parent.body) :
+                    try :
+                        if (b.split()[1].lower() not in config.coins) :
+                            raise InvalidOperation
+                        Decimal(b.split()[0])
+                        message.reply("**Interactive mode**: Your trade partner is " + parent.body.split()[6] + " and you will send " + message.body +
+                                    " into the escrow.\n\n- If everything is *correct*, reply \"done\".\n- If the name of your trade parter is *not correct*, " +
+                                    "reply with the username of your trade partner, including the u/ (such as u/test).\n- If the amount of the escrow is *not " +
+                                    "correct*, please reply with the amount you will send into the escrow (such as `0.75 LTC`)." + config.signature())
+                    except InvalidOperation :
+                        message.reply("**Interactive mode**: Your trade partner is " + parent.body.split()[6] + "\n\nWe couldn't detect the amount of the escrow." +
+                                    " Please reply with the amount of crypto that you will send into the escrow, such as `0.05 ETH`." + config.signature())
+                    message.mark_read()
+            except prawcore.exceptions.Forbidden :
+                pass
         if ("done" in b.lower() and len(b) < 7) :
             parent = r.inbox.message(message.parent_id[3:]).body
             b = "--NEW TRANSACTION--\nPartner: " + parent.split()[6][2:] + '\nAmount: ' + parent.split()[11] +' ' + parent.split()[12] + "\n--CONTRACT--\n"
