@@ -69,7 +69,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             try :
                 if ("yourtradepartnersusername" in b or "0.12345 BTC/BCH" in b) :
                     #start interactive mode
-                    message.reply("**Interactive mode**: Please reply with the username of the person you'd like to start an escrow transaction with, including the u/. " +
+                    message.reply("**Interactive mode**: Please reply to this message with the username of the person you'd like to start an escrow transaction with, including the u/. " +
                                   "For example, if your trade partner's username is u/test, reply to this message with `u/test`." + config.signature())
                     message.mark_read()
                     continue
@@ -123,13 +123,14 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                     message.mark_read()
                     continue
             except crypto.UnsupportedCoin :
-                reply = "Sorry, that coin is currently not supported. The bot only supports "
+                reply = "The amount line must specify the amount in cryptocurrency (such as `0.001 BTC` or `0.5 LTC`). The bot supports "
                 for coin in config.coins :
                     reply += coin.upper() + " "
                 message.reply(reply + "." + config.signature())
             except Exception as e:
                 print(e)
-                message.reply("Invalid syntax. Please see [this page](https://www.reddit.com/r/Cash4Cash/wiki/index/escrow) for help." + config.signature())
+                message.reply("**Interactive mode**: We couldn't read the information you provided in the form, but we can still proceed with the escrow. Please reply to this message with the username of the person you'd like to start an escrow transaction with, including the u/. " +
+                              "For example, if your trade partner's username is u/test, reply to this message with `u/test`." + config.signature())
             message.mark_read()
         #Join an escrow transaction as the recipient
         elif ("!join" in b.lower()) :
