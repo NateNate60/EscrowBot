@@ -122,6 +122,8 @@ class Escrow :
             self.privkey = '000'
             while (self.privkey == '000') : #identifier should not be 000
                 self.privkey = str(int(random.random() * 1000))
+            while (len(self.privkey) < 3) :
+                self.privkey = "0" + self.privkey
         elif (self.coin == "usdt") :
             self.privkey = "000"
             pass #Privkey not needed for USDT TRC-20
