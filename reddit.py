@@ -58,7 +58,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                         message.reply("**Interactive mode**: Your trade partner is " + parent.body.split()[6] + "\n\nWe couldn't detect the amount of the escrow." +
                                     " Please reply with the amount of crypto that you will send into the escrow, such as `0.05 ETH`." + config.signature())
                     message.mark_read()
-            except prawcore.exceptions.Forbidden :
+            except (prawcore.exceptions.Forbidden, TypeError) :
                 pass
         if ("done" in b.lower() and len(b) < 7) :
             parent = r.inbox.message(message.parent_id[3:]).body
@@ -211,7 +211,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                 message.reply("Escrow " + escrow.id + " is not fully funded. Only fully funded escrows can be released.")
                 message.mark_read()
                 continue
-            if (message.author.name.lower() == escrow.sender) :
+            if (message.author.name.lower() == escrow.sender or message.author.name.lower() in config.mods) :
                 escrow.release()
                 notifyavailable(escrow)
                 db.add(escrow)
@@ -260,7 +260,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                 message.reply("The escrow with ID " + escrow.id + " is not fully funded. Only fully funded escrows can be released.")
                 message.mark_read()
                 continue
-            if (message.author.name.lower() == escrow.recipient) :
+            if (message.author.name.lower() == escrow.recipient or message.author.name.lower() in config.mods) :
                 escrow.refund()
                 notifyavailable(escrow, True)
                 db.add(escrow)
