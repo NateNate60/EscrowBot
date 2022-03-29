@@ -49,9 +49,8 @@ class Database :
             escrow.value = Decimal(str(escrow.value)[:7])
         print ("adding", escrow.id)
         self.db.execute("DELETE FROM transactions WHERE id=?;", (escrow.id,))
-        self.db.execute("INSERT INTO transactions VALUES (\"" + escrow.id + "\",\"" + escrow.sender + 
-                        "\",\"" + escrow.recipient + "\"," + str(escrow.state) + ",\"" + escrow.coin + 
-                        "\",\"" + str(escrow.value) + "\", ?,\"" + escrow.privkey + "\", " + str(int(time())) + ");", (escrow.contract,))
+        self.db.execute("INSERT INTO transactions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                       (escrow.id, escrow.sender, escrow.recipient, escrow.state, escrow.coin, str(escrow.value), escrow.contract, escrow.privkey, int(time())))
         self.db.commit()
     
     def bump (self, id: str) :
@@ -79,7 +78,7 @@ class Database :
         This is because for account-based coins, we can only have one open escrow transaction at a time for any given amount
         Completed or failed transactions are ignored.
         """
-        cursor = self.db.execute("SELECT * FROM transactions WHERE value = " + str(amount) + " AND coin = ? AND state = 1", (coin,))
+        cursor = self.db.execute("SELECT * FROM transactions WHERE value = ? AND coin = ? AND state = 1", (str(amount), coin,))
         element = cursor.fetchall()
         return len(element) > 0
 
