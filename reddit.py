@@ -49,7 +49,8 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                 escrow = db.lookup(b.split(" ")[1])
                 if (escrow == None) :
                     message.reply("The given escrow id of `" + db.lookup(b.split(" ")[1]) + '` does not exist.' + config.signature())
-                message.reply("Escrow lookup result:\n\n" + formatescrowlist([escrow]) + config.signature())
+                else :
+                    message.reply("Escrow lookup result:\n\n" + formatescrowlist([escrow]) + config.signature())
             else :
                 if (message.author.name.lower() in config.mods) :
                     message.reply("Escrow lookup result (last 30 days):\n\n" + formatescrowlist(db.latest()) + config.signature())
@@ -58,6 +59,36 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             message.mark_read()
             continue
             
+        if ("!lock" in b) :
+            if (len(b.split(" ")) == 2) :
+                escrow = db.lookup(b.split(' ')[1])
+                if (escrow == None) :
+                    message.reply("The given escrow id of `" + db.lookup(b.split(" ")[1]) + '` does not exist.' + config.signature())
+                elif (message.author.name.lower() in config.mods) :
+                    escrow.state = -2
+                    db.add(escrow)
+                    message.reply("Successfully locked." + config.signature())
+                else :
+                    message.reply("You are not authorised to do that." + config.signature())
+            else :
+                message.reply("Invalid syntax. Please provide an escrow ID using `!lock escrowID`")
+            message.mark_read()
+
+        if ("!unlock" in b) :
+            if (len(b.split(" ")) == 3) :
+                escrow = db.lookup(b.split(' ')[1])
+                if (escrow == None) :
+                    message.reply("The given escrow id of `" + db.lookup(b.split(" ")[1]) + '` does not exist.' + config.signature())
+                elif (message.author.name.lower() in config.mods) :
+                    escrow.state = 1
+                    db.add(escrow)
+                    message.reply("Successfully unlocked." + config.signature())
+                else :
+                    message.reply("You are not authorised to do that." + config.signature())
+            else :
+                message.reply("Invalid syntax. Please provide an escrow ID using `!unlock escrowID`")
+            message.mark_read()
+
         #Responses to interactive mode
         if (b[:2] == "u/") :
             parent = r.inbox.message(message.parent_id[3:]).body
