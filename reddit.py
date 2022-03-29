@@ -65,8 +65,9 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                 if (escrow == None) :
                     message.reply("The given escrow id of `" + db.lookup(b.split(" ")[1]) + '` does not exist.' + config.signature())
                 elif (message.author.name.lower() in config.mods) :
-                    escrow.state = -2
-                    db.add(escrow)
+                    if (escrow.state == 2 or escrow.state == 3 or escrow.state == -1) :
+                        escrow.state = -2
+                        db.add(escrow)
                     message.reply("Successfully locked." + config.signature())
                 else :
                     message.reply("You are not authorised to do that." + config.signature())
@@ -81,7 +82,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                     message.reply("The given escrow id of `" + db.lookup(b.split(" ")[1]) + '` does not exist.' + config.signature())
                 elif (message.author.name.lower() in config.mods) :
                     if (escrow.state == -2) :
-                        escrow.state = 1
+                        escrow.state = 2
                         db.add(escrow)
                     message.reply("Successfully unlocked." + config.signature())
                 else :
