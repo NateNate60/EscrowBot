@@ -5,6 +5,7 @@ import database
 from decimal import Decimal, InvalidOperation
 import prawcore
 import atexit
+from datetime import datetime
 from uslapi import uslapi
 
 r = praw.Reddit(username = config.username, password = config.password, client_id = config.client_id, client_secret = config.client_secret, user_agent = "Nate'sEscrowBot")
@@ -21,6 +22,15 @@ def usllogout():
 #Auto-logout USL upon exit
 atexit.register(usllogout)
 
+def formatescrowlist (escrowlist: list) -> str :
+    """
+    Format a list of escrows into Markdown for usage in a Reddit reply
+    """
+    text = "|Escrow ID|Sender|Recipient|Amount|Coin|State|Last Used (Pacific Time)|\n|---|---|---|---|---|---|---|\n"
+    for escrow in escrowlist :
+        text += "|" + escrow.id + "|u/" + escrow.sender + "|u/" + escrow.recipient + "|" + str(escrow.value) + "|" + escrow.coin + "|" + crypto.interpretstate(escrow.state) + "|" + datetime.fromtimestamp(escrow.lasttime).strftime('%Y-%m-%d %H:%M:%S') + "|\n"
+    return text
+
 
 def checkinbox(r: praw.Reddit, db: database.Database) -> list :
 
@@ -33,6 +43,21 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             b = "!" + message.body[2:]
             message.body = b
         
+        if ("!info" in b) :
+            if (len(b.split(" " )) == 2) :
+                
+                escrow = db.lookup(b.split(" ")[1])
+                if (escrow == None) :
+                    message.reply("The given escrow id of `" + db.lookup(b.split(" ")[1]) + '` does not exist.' + config.signature())
+                message.reply("Escrow lookup result:\n\n" + formatescrowlist([escrow]) + config.signature())
+            else :
+                if (message.author.name.lower() in config.mods) :
+                    message.reply("Escrow lookup result (last 30 days):\n\n" + formatescrowlist(db.latest()) + config.signature())
+                else :
+                    message.reply("Only mods can look up all escrows. Please use `!info escrowID` to get information about a specific escrow.")
+            message.mark_read()
+            continue
+            
         #Responses to interactive mode
         if (b[:2] == "u/") :
             parent = r.inbox.message(message.parent_id[3:]).body

@@ -58,6 +58,27 @@ def tronstake () -> None :
         #does not attempt to stake if it would stake less than 1 TRX
         client.trx.freeze_balance(config.tronaddr, bal - 30000000, "ENERGY").build().sign(tronpy.keys.PrivateKey(bytes.fromhex(config.tronpriv))).broadcast()
 
+
+def interpretstate (state: int) -> str :
+    """
+    Interpret the state value into something that is human-readable
+    """
+    if (state == 0) :
+        return "Awaiting recipient to join"
+    if (state == 1) :
+        return "Awaiting deposit from sender"
+    if (state == 2) :
+        return "Fully funded"
+    if (state == 3) :
+        return "Awaiting recipient to withdraw"
+    if (state == 4) :
+        return "Complete"
+    if (state == -1) :
+        return "Awaiting sender to withdrawal"
+    if (state == -9) :
+        return "Not funded and expired"
+    return "Unknown"
+
 #Class representing an escrow transaction
 class Escrow :
     def __init__(self, coin: str) -> None:

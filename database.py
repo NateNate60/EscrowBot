@@ -82,6 +82,18 @@ class Database :
         element = cursor.fetchall()
         return len(element) > 0
 
+    def latest (self) -> list :
+        """
+        Returns a list of all Escrow objects with a lasttime within the past 30 days
+        """
+        cursor = self.db.cursor()
+        cursor.execute("SELECT * FROM transactions WHERE time > ?;", (int(time()) - 2592000,))
+        rows = cursor.fetchall()
+        l = []
+        for i in rows :
+            l.append(self._decode(i))
+        return l
+
     def _decode (*args) -> crypto.Escrow :
         """
         Decode a tuple that represents the data fetched by SQLite
