@@ -332,7 +332,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             if ('c4cid' not in m[1]) :
                 try :
                     p = r.inbox.message(message.parent_id[3:]).body.lower()
-                    if ("was released to you" not in p) :
+                    if ("was released to you" not in p and "while withdrawing from escrow ID" not in p) :
                         raise TypeError
                     p = p.split('c4cid')[1].split(' ')[0]
                     m.insert(1, 'c4cid' + p)
@@ -364,7 +364,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             try :
                 txid = escrow.pay(m[2],int(m[3]))
                 if (txid == None) :
-                    message.reply("An error occured while sending to that address. Please make sure the address is correct." + config.signature())
+                    message.reply("An error occured while withdrawing from escrow ID "+ escrow.id +" to that address. Please make sure the address is correct. Addresses are case-sensitive." + config.signature())
                 else :
                     message.reply("Sent TXID: " + txid + config.signature(True))
                     escrow.state = 4
