@@ -96,7 +96,7 @@ class Database :
         l = []
         for i in rows :
             l.append(self._decode(i))
-        return l
+        return l.reverse()
 
     def _decode (*args) -> crypto.Escrow :
         """
