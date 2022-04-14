@@ -48,9 +48,9 @@ class Database :
         if (escrow.coin == "eth") :
             escrow.value = Decimal(str(escrow.value)[:7])
         elif (escrow.coin == "usdt") :
-            escrow.value = Decimal(str(escrow.value).split(".")[0] + "." + str(escrow.value).split(".")[0][:6])
+            escrow.value = Decimal(str(escrow.value).split(".")[0] + "." + str(escrow.value).split(".")[1][:6])
         else :
-            escrow.value = Decimal(str(escrow.value).split(".")[0] + "." + str(escrow.value).split(".")[0][:8])
+            escrow.value = Decimal(str(escrow.value).split(".")[0] + "." + str(escrow.value).split(".")[1][:8])
         print ("adding", escrow.id)
         self.db.execute("DELETE FROM transactions WHERE id=?;", (escrow.id,))
         self.db.execute("INSERT INTO transactions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -96,7 +96,8 @@ class Database :
         l = []
         for i in rows :
             l.append(self._decode(i))
-        return l.reverse()
+        l.reverse()
+        return l
 
     def _decode (*args) -> crypto.Escrow :
         """
