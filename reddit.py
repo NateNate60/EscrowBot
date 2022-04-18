@@ -170,7 +170,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                                                          "\n\n**Warning:** The person who initiated this escrow is listed on the Universal Scammer List. Please exercise caution and proceed at your own risk." * listed[0]["banned"] +
                                                          config.signature())
                     message.reply("New escrow transaction opened. We are now waiting for u/" + escrow.recipient + " to agree to the escrow. All escrows are subject to our [terms of service](https://reddit.com/r/Cash4Cash/wiki/index/tos). By using the escrow, you agree to be bound by these terms."
-                                  " This escrow transaction's ID is " + escrow.id + "." + "\n\n**NOTE**: ETH escrow values are rounded to the nearest 0.00001." * (escrow.coin == "eth") + "\n\n**Warning:** The person who you're dealing with is listed on the Universal Scammer List. Please exercise caution and proceed at your own risk." * listed[1] + config.signature())
+                                  " This escrow transaction's ID is " + escrow.id + "." + "\n\n**NOTE**: ETH escrow values are rounded to the nearest 0.00001." * (escrow.coin == "eth") + "\n\n**Warning:** The person who you're dealing with is listed on the Universal Scammer List. Please exercise caution and proceed at your own risk." * listed[1]['banned'] + config.signature())
                     
                     db.add(escrow)
                 except Exception:
