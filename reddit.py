@@ -162,7 +162,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                                                          "The amount to be escrowed: " + str(escrow.value) + ' ' + escrow.coin.upper() + '\n\n'+
                                                          "If you wish to join the escrow transaction, you must agree to the following terms, as set out by u/" + escrow.sender + ":\n\n" +
                                                          escrow.contract + "\n\n" +
-                                                         "If you agree to the terms and would like to join the escrow, reply `!join`. If you DO NOT agree to " +
+                                                         "...as well as our [terms of service](https://reddit.com/r/Cash4Cash/wiki/index/tos). If you agree to the terms and would like to join the escrow, reply `!join`. If you DO NOT agree to " +
                                                          "the terms or the amount, simply ignore this message. You can join again later whenever you want. Escrows are subject to a small" +
                                                          " fee in order to help pay for server costs. More info about the escrow and the fee schedule can be found on our [wiki page](https://reddit.com/r/cash4cash/wiki/index/escrow)" +
                                                          "\n\n**Note:** This does not mean that the sender is guaranteed not a scammer. The escrow has not been funded and no money has been sent yet." +
