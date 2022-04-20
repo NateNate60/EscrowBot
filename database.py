@@ -46,11 +46,11 @@ class Database :
         if (escrow == None) :
             return
         if (escrow.coin == "eth") :
-            escrow.value = Decimal(str(escrow.value)[:7])
+            escrow.value = escrow.value.quantize(Decimal("0.00001")).normalize()
         elif (escrow.coin == "usdt") :
-            escrow.value = Decimal(str(escrow.value).split(".")[0] + "." + str(escrow.value).split(".")[1][:6])
+            escrow.value = escrow.value.quantize(Decimal("0.01")).normalize()
         else :
-            escrow.value = Decimal(str(escrow.value).split(".")[0] + "." + str(escrow.value).split(".")[1][:8])
+            escrow.value = escrow.value.quantize(Decimal("0.00000001")).normalize()
         print ("adding", escrow.id)
         self.db.execute("DELETE FROM transactions WHERE id=?;", (escrow.id,))
         self.db.execute("INSERT INTO transactions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
