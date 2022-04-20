@@ -460,7 +460,7 @@ def checksub(r: praw.Reddit, db: database.Database) :
                                                             "custom feerates are not supported yet when you withdraw your funds.\n\n" +
                                                             " **Note:** This does not mean that the sender is guaranteed not a scammer. The escrow has not been funded and no money has been sent yet." +
                                                             config.signature())
-                    reply = "New escrow transaction opened. We are now waiting for u/" + escrow.recipient + " to agree to the escrow. This escrow transaction's ID is " + escrow.id + config.signature()
+                    reply = "New escrow transaction opened. We are now waiting for u/" + escrow.recipient + " to agree to the escrow. All escrows are subject to our [terms of service](https://reddit.com/r/Cash4Cash/wiki/index/tos). By using the escrow, you agree to be bound by these terms. This escrow transaction's ID is " + escrow.id + config.signature()
                     if (escrow.contract == "*The sender did not supply any contract terms.*") :
                         reply += "\n\nTip: You can add a \"contract\" on a separate line after the line containing `!escrow`. The recipient will be asked to agree to the contract before joining the escrow."
                     db.add(escrow)
