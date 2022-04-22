@@ -514,14 +514,14 @@ def notifyavailable (escrow: crypto.Escrow, sender: bool = False) :
             r.redditor(escrow.recipient).message("Funds available", message)
 
 
-def askpayment (escrow: crypto.Escrow) -> str :
+def askpayment (escrow: crypto.Escrow) -> None :
         """
         Ask the sender to fund the escrow
         """
         #ETH is handled differently because it requires an identifier
         if (escrow.coin == "eth") :
             r.redditor(escrow.sender).message("Escrow funding address", "In order to fund the escrow with ID " + escrow.id + 
-                                            ", please send " + str(escrow.value) + escrow.privkey + " " + escrow.coin.upper() +
+                                            ", please send " + str(escrow.value.quantize(Decimal("0.00001"))) + escrow.privkey + " " + escrow.coin.upper() +
                                             " to " + config.ethaddr + ".\n\n**IMPORTANT**: You must send _exactly_ this amount, after network fees. If too little or too much is received," +
                                             " your payment will not be detected. If you accidentally sent the wrong amount, please reach out to us for help!" + config.signature())
             return
