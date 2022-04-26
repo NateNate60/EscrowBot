@@ -193,8 +193,6 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             if (isinstance(message, praw.models.Message) and len(b.split(' ')) == 1) :
                 try :
                     b = r.inbox.message(message.parent_id[3:]).body.lower()
-                    if ("has invited you to join the escrow with id" not in b) :
-                        raise ValueError
                     b = b.split('c4cid')[1].split('\n')[0]
                     escrow = db.lookup('c4cid' + b)
                     print('Looking up c4cid' + b)
@@ -232,7 +230,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                     message.mark_read()
                     continue
                 else :
-                    message.reply("This escrow transaction cannot be joined." + config.signature())
+                    message.reply("This escrow transaction cannot be joined. This probably means you've already joined it." + config.signature())
                     message.mark_read()
                     continue
             else :
@@ -329,8 +327,6 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             if ('c4cid' not in m[1]) :
                 try :
                     p = r.inbox.message(message.parent_id[3:]).body.lower()
-                    if ("was released to you" not in p and "while withdrawing from escrow ID" not in p) :
-                        raise TypeError
                     p = p.split('c4cid')[1].split(' ')[0]
                     m.insert(1, 'c4cid' + p)
                 except (TypeError, prawcore.exceptions.Forbidden) :
