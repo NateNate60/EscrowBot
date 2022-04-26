@@ -28,7 +28,7 @@ def formatescrowlist (escrowlist: list) -> str :
     """
     text = "|Escrow ID|Sender|Recipient|Amount|Coin|State|Last Used (Pacific Time)|\n|---|---|---|---|---|---|---|\n"
     for escrow in escrowlist :
-        text += "|" + escrow.id + "|u/" + escrow.sender + "|u/" + escrow.recipient + "|" + str(escrow.value) + "|" + escrow.coin + "|" + crypto.interpretstate(escrow.state) + "|" + datetime.fromtimestamp(escrow.lasttime).strftime('%Y-%m-%d %H:%M:%S') + "|\n"
+        text += f"|{escrow.id}|u/{escrow.sender}|u/{escrow.recipient}|{str(escrow.value)}|{escrow.coin}|{crypto.interpretstate(escrow.state)}|{datetime.fromtimestamp(escrow.lasttime).strftime('%Y-%m-%d %H:%M:%S')}|\n"
     return text
 
 
@@ -48,12 +48,12 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                 
                 escrow = db.lookup(b.split(" ")[1])
                 if (escrow == None) :
-                    message.reply("The given escrow id of `" + db.lookup(b.split(" ")[1]) + '` does not exist.' + config.signature())
+                    message.reply(f"The given escrow id of {b.split(' ')[1]} does not exist." + config.signature())
                 else :
-                    message.reply("Escrow lookup result:\n\n" + formatescrowlist([escrow]) + config.signature())
+                    message.reply(f"Escrow lookup result:\n\n{formatescrowlist([escrow])}" + config.signature())
             else :
                 if (message.author.name.lower() in config.mods) :
-                    message.reply("Escrow lookup result (last 30 days):\n\n" + formatescrowlist(db.latest()) + config.signature())
+                    message.reply(f"Escrow lookup result (last 30 days):\n\n{formatescrowlist(db.latest())}" + config.signature())
                 else :
                     message.reply("Only mods can look up all escrows. Please use `!info escrowID` to get information about a specific escrow.")
             message.mark_read()
@@ -63,7 +63,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             if (len(b.split(" ")) == 2) :
                 escrow = db.lookup(b.split(' ')[1])
                 if (escrow == None) :
-                    message.reply("The given escrow id of `" + db.lookup(b.split(" ")[1]) + '` does not exist.' + config.signature())
+                    message.reply(f"The given escrow id of {b.split(' ')[1]} does not exist." + config.signature())
                 elif (message.author.name.lower() in config.mods) :
                     if (escrow.state == 2 or escrow.state == 3 or escrow.state == -1) :
                         escrow.state = -2
@@ -79,7 +79,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             if (len(b.split(" ")) == 3) :
                 escrow = db.lookup(b.split(' ')[1])
                 if (escrow == None) :
-                    message.reply("The given escrow id of `" + db.lookup(b.split(" ")[1]) + '` does not exist.' + config.signature())
+                    message.reply(f"The given escrow id of {b.split(' ')[1]} does not exist." + config.signature())
                 elif (message.author.name.lower() in config.mods) :
                     if (escrow.state == -2) :
                         escrow.state = 2
@@ -95,7 +95,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
         if (b[:2] == "u/") :
             parent = r.inbox.message(message.parent_id[3:]).body
             if ("**Interactive mode**" in parent) :
-                message.reply("**Interactive mode**: Your trade partner is u/" + b.split()[0][2:] + "\n\n- If this is *not correct*, reply with your" +
+                message.reply(f"**Interactive mode**: Your trade partner is u/{b.split()[0][2:]}\n\n- If this is *not correct*, reply with your" +
                               " trade partner's username, including the u/ (such as u/test).\n- If this is *correct*, reply with the amount of crypto that you will " +
                               "send into the escrow, such as `0.001 BTC`." + config.signature())
             message.mark_read()
@@ -108,12 +108,12 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                         if (b.split()[1].lower() not in config.coins) :
                             raise InvalidOperation
                         Decimal(b.split()[0])
-                        message.reply("**Interactive mode**: Your trade partner is " + parent.body.split()[6] + " and you will send " + message.body +
+                        message.reply(f"**Interactive mode**: Your trade partner is {parent.body.split()[6]} and you will send {message.body}" +
                                     " into the escrow.\n\n- If everything is *correct*, reply \"done\".\n- If the name of your trade parter is *not correct*, " +
                                     "reply with the username of your trade partner, including the u/ (such as u/test).\n- If the amount of the escrow is *not " +
                                     "correct*, please reply with the amount you will send into the escrow (such as `0.75 LTC`)." + config.signature())
                     except InvalidOperation :
-                        message.reply("**Interactive mode**: Your trade partner is " + parent.body.split()[6] + "\n\nWe couldn't detect the amount of the escrow." +
+                        message.reply(f"**Interactive mode**: Your trade partner is {parent.body.split()[6]}\n\nWe couldn't detect the amount of the escrow." +
                                     " Please reply with the amount of crypto that you will send into the escrow, such as `0.05 ETH`." + config.signature())
                     message.mark_read()
             except (prawcore.exceptions.Forbidden, TypeError) :
@@ -158,10 +158,10 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                 try :
                     #list of the USL status of escrow [sender, recipient]
                     listed = [usls.query(usl, escrow.sender), usls.query(usl, escrow.recipient)]
-                    r.redditor(escrow.recipient).message("Invitation to join escrow", escrow.sender + " has invited you to join the escrow with ID " + escrow.id +"\n\n" +
-                                                         "The amount to be escrowed: " + str(escrow.value) + ' ' + escrow.coin.upper() + '\n\n'+
-                                                         "If you wish to join the escrow transaction, you must agree to the following terms, as set out by u/" + escrow.sender + ":\n\n" +
-                                                         escrow.contract + "\n\n" +
+                    r.redditor(escrow.recipient).message("Invitation to join escrow", f"{escrow.sender} has invited you to join the escrow with ID {escrow.id} \n\n" +
+                                                         f"The amount to be escrowed: {str(escrow.value)} {escrow.coin.upper()}\n\n"+
+                                                         f"If you wish to join the escrow transaction, you must agree to the following terms, as set out by u/{escrow.sender}:\n\n" +
+                                                         f"{escrow.contract}\n\n" +
                                                          "...as well as our [terms of service](https://reddit.com/r/Cash4Cash/wiki/index/tos). If you agree to the terms and would like to join the escrow, reply `!join`. If you DO NOT agree to " +
                                                          "the terms or the amount, simply ignore this message. You can join again later whenever you want. Escrows are subject to a small" +
                                                          " fee in order to help pay for server costs. More info about the escrow and the fee schedule can be found on our [wiki page](https://reddit.com/r/cash4cash/wiki/index/escrow)" +
@@ -169,8 +169,8 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                                                          "\n\n**Note:** This escrow is for USDT TRC-20."*(escrow.coin == 'usdt') +
                                                          "\n\n**Warning:** The person who initiated this escrow is listed on the Universal Scammer List. Please exercise caution and proceed at your own risk." * listed[0]["banned"] +
                                                          config.signature())
-                    message.reply("New escrow transaction opened. We are now waiting for u/" + escrow.recipient + " to agree to the escrow. All escrows are subject to our [terms of service](https://reddit.com/r/Cash4Cash/wiki/index/tos). By using the escrow, you agree to be bound by these terms."
-                                  " This escrow transaction's ID is " + escrow.id + "." + "\n\n**NOTE**: ETH escrow values are rounded to the nearest 0.00001." * (escrow.coin == "eth") + "\n\n**Warning:** The person who you're dealing with is listed on the Universal Scammer List. Please exercise caution and proceed at your own risk." * listed[1]['banned'] + config.signature())
+                    message.reply(f"New escrow transaction opened. We are now waiting for u/{escrow.recipient} to agree to the escrow. All escrows are subject to our [terms of service](https://reddit.com/r/Cash4Cash/wiki/index/tos). By using the escrow, you agree to be bound by these terms."
+                                  f" This escrow transaction's ID is {escrow.id}.{'\n\n**NOTE**: ETH escrow values are rounded to the nearest 0.00001.' *(escrow.coin == 'eth')}{'\n\n**Warning:** The person who you\'re dealing with is listed on the Universal Scammer List. Please exercise caution and proceed at your own risk.' * listed[1]['banned']}" + config.signature())
                     
                     db.add(escrow)
                 except Exception:
@@ -257,11 +257,11 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                 continue
             escrow = db.lookup(m[1])
             if (escrow == None) :
-                message.reply("The provided escrow ID (`" + m[1] + "`) does not exist. Escrow IDs begin with \"c4cid\"." + config.signature())
+                message.reply(f"Escrow ID {m[1]} does not exist. Escrow IDs begin with \"c4cid\"." + config.signature())
                 message.mark_read()
                 continue
             if (escrow.state != 2) :
-                message.reply("Escrow " + escrow.id + " is not fully funded. Only fully funded escrows can be released.")
+                message.reply(f"Escrow {escrow.id} is not fully funded. Only fully funded escrows can be released.")
                 message.mark_read()
                 continue
             if (message.author.name.lower() == escrow.sender or message.author.name.lower() in config.mods) :
@@ -306,11 +306,11 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                 continue
             escrow = db.lookup(m[1])
             if (escrow == None) :
-                message.reply("The provided escrow ID (" + m[1] + ") does not exist. Escrow IDs begin with \"c4cid\"." + config.signature())
+                message.reply(f"The provided escrow ID {m[1]} does not exist. Escrow IDs begin with \"c4cid\"." + config.signature())
                 message.mark_read()
                 continue
             if (escrow.state != 2) :
-                message.reply("The escrow with ID " + escrow.id + " is not fully funded. Only fully funded escrows can be released.")
+                message.reply(f"The escrow with ID {escrow.id} is not fully funded. Only fully funded escrows can be released.")
                 message.mark_read()
                 continue
             if (message.author.name.lower() == escrow.recipient or message.author.name.lower() in config.mods) :
@@ -342,7 +342,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             m.append('0')
             escrow = db.lookup(m[1])
             if (escrow == None) :
-                message.reply("That escrow ID (" + m[1] + ") does not exist." + config.signature())
+                message.reply(f"Escrow ID {m[1]} does not exist." + config.signature())
                 message.mark_read()
                 continue
             if ((escrow.recipient != message.author.name.lower() and escrow.state == 3) or (escrow.sender != message.author.name.lower() and escrow.state == -1)) :
