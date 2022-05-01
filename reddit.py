@@ -193,7 +193,7 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
             if (isinstance(message, praw.models.Message) and len(b.split(' ')) == 1) :
                 try :
                     b = r.inbox.message(message.parent_id[3:]).body.lower()
-                    b = b.split('c4cid')[1].split('\n')[0]
+                    b = b.split('c4cid')[1].split()[0]
                     escrow = db.lookup('c4cid' + b)
                     print('Looking up c4cid' + b)
                 except (prawcore.exceptions.Forbidden, ValueError, TypeError, IndexError) :
