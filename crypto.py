@@ -185,7 +185,10 @@ class Escrow :
                     val = bitcoinlib.values.Value(str(self.value - Decimal(config.escrowfee['ltc']) - Decimal('.000008')) + " LTC")
                     targetout = bitcoinlib.transactions.Output(network='litecoin', value=val, address=addr)
                     feeout = bitcoinlib.transactions.Output(value=bitcoinlib.values.Value(str(config.escrowfee['ltc']) + " LTC"), network='litecoin', address=config.leftover['ltc'])
-                    tx = bitcoinlib.transactions.Transaction(outputs=[targetout, feeout], network='litecoin', fee=800)
+                    outputs = [targetout]
+                    if (str(config.escrowfee['ltc']) != "0") :
+                        outputs.append(feeout)
+                    tx = bitcoinlib.transactions.Transaction(outputs=outputs, network='litecoin', fee=800)
                     if (len(uxtos) == 0) :
                         continue
                     for i in uxtos :
