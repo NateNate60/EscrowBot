@@ -162,14 +162,14 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                                                          f"The amount to be escrowed: {str(escrow.value)} {escrow.coin.upper()}\n\n"+
                                                          f"If you wish to join the escrow transaction, you must agree to the following terms, as set out by u/{escrow.sender}:\n\n" +
                                                          f"{escrow.contract}\n\n" +
-                                                         "...as well as our [terms of service](https://reddit.com/r/Cash4Cash/wiki/index/tos). If you agree to the terms and would like to join the escrow, reply `!join`. If you DO NOT agree to " +
-                                                         "the terms or the amount, simply ignore this message. You can join again later whenever you want. Escrows are subject to a small" +
-                                                         " fee in order to help pay for server costs. More info about the escrow and the fee schedule can be found on our [wiki page](https://reddit.com/r/cash4cash/wiki/index/escrow)" +
+                                                         "...as well as our [terms of service](https://www.reddit.com/user/Escrow-Bot/comments/ypvcvv/escrowbot_terms_of_use/). If you agree to the terms and would like to join the escrow, reply `!join`. If you DO NOT agree to " +
+                                                         "the terms or the amount, simply ignore this message. You can join again later whenever you want. Escrows may be subject to a small" +
+                                                         " fee in order to help pay for server costs. More info about the escrow and the [fee schedule](https://www.reddit.com/user/Escrow-Bot/comments/ypvkk5/current_escrow_fees/) can be found on the [profile page](https://www.reddit.com/user/Escrow-Bot/comments/qen5ae/whats_this/)" +
                                                          "\n\n**Note:** This does not mean that the sender is guaranteed not a scammer. The escrow has not been funded and no money has been sent yet." +
                                                          "\n\n**Note:** This escrow is for USDT TRC-20."*(escrow.coin == 'usdt') +
                                                          "\n\n**Warning:** The person who initiated this escrow is listed on the Universal Scammer List. Please exercise caution and proceed at your own risk." * listed[0]["banned"] +
                                                          config.signature())
-                    message.reply(f"New escrow transaction opened. We are now waiting for u/{escrow.recipient} to agree to the escrow. All escrows are subject to our [terms of service](https://reddit.com/r/Cash4Cash/wiki/index/tos). By using the escrow, you agree to be bound by these terms." +
+                    message.reply(f"New escrow transaction opened. We are now waiting for u/{escrow.recipient} to agree to the escrow. All escrows are subject to our [terms of service](https://www.reddit.com/user/Escrow-Bot/comments/ypvcvv/escrowbot_terms_of_use/). By using the escrow, you agree to be bound by these terms." +
                                   f" This escrow transaction's ID is {escrow.id}." + '\n\n**NOTE**: ETH escrow values are rounded to the nearest 0.00001.' *(escrow.coin == 'eth') + '\n\n**Warning:** The person you\'re dealing with is listed on the Universal Scammer List. Please exercise caution and proceed at your own risk.' * listed[1]['banned'] + config.signature())
                     
                     db.add(escrow)
@@ -334,6 +334,11 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                                   config.signature())
                     message.mark_read()
                     continue
+                except (IndexError) :
+                    message.reply("Invalid syntax. The correct syntax is `!withdraw [escrow ID] address`. Additionally, you may specify your own feerate: `!withdraw [escrow ID] address feerate`" +
+                                  config.signature())
+                    message.mark_read()
+                    continue
             if (len(m) != 3 and len(m) != 4) :
                 message.reply("Invalid syntax. The correct syntax is `!withdraw [escrow ID] address`. Additionally, you may specify your own feerate: `!withdraw [escrow ID] address feerate`" +
                               config.signature())
@@ -397,7 +402,7 @@ def checksub(r: praw.Reddit, db: database.Database) :
                               "\n\nStarts a new escrow transaction with u/`partner` for `amount` of `coin`. For example, `!escrow NateNate60 0.001 BTC` will open" +
                               " a new escrow transaction with NateNate60 for 0.001 Bitcoin. Additionally, you can put any arbitrary contract text after the command, seperated by a line break." +
                               " So, you can type:\n\n    !escrow NateNate60 0.001 BTC\n    \n    NateNate60 agrees to send me one 50kg crate of potatoes in exchange for\n    0.001 BTC.\n\n" +
-                              "For more information, [click here](https://reddit.com/r/Cash4Cash/wiki/index/escrow)." + config.signature())
+                              "For more information, [click here](https://reddit.com/user/Escrow-Bot/comments/qen5ae/whats_this/)." + config.signature())
             else :
                 b = b.split('\n\n')
                 if (len(b) == 1) :
@@ -437,9 +442,9 @@ def checksub(r: praw.Reddit, db: database.Database) :
                         "The amount to be escrowed: " + str(escrow.value) + ' ' + escrow.coin.upper() + '\n\n'+
                         "If you wish to join the escrow transaction, you must agree to the following terms, as set out by u/" + escrow.sender + ":\n\n" +
                         escrow.contract + "\n\n" +
-                        "...as well as our [terms of service](https://reddit.com/r/Cash4Cash/wiki/index/tos). If you agree to the terms and would like to join the escrow, reply `!join`. If you DO NOT agree to " +
-                        "the terms or the amount, simply ignore this message. You can join again later whenever you want. Escrows are subject to a small" +
-                        " fee in order to help pay for server costs. More info about the escrow and the fee schedule can be found on our [wiki page](https://reddit.com/r/cash4cash/wiki/index/escrow)" +
+                        "...as well as our [terms of service](https://www.reddit.com/user/Escrow-Bot/comments/ypvcvv/escrowbot_terms_of_use/). If you agree to the terms and would like to join the escrow, reply `!join`. If you DO NOT agree to " +
+                        "the terms or the amount, simply ignore this message. You can join again later whenever you want. Escrows may be subject to a small" +
+                        " fee in order to help pay for server costs. More info about the escrow and the [fee schedule](https://www.reddit.com/user/Escrow-Bot/comments/ypvkk5/current_escrow_fees/) can be found on the [profile page](https://www.reddit.com/user/Escrow-Bot/comments/qen5ae/whats_this/)" +
                         "\n\n**Note:** This does not mean that the sender is guaranteed not a scammer. The escrow has not been funded and no money has been sent yet." +
                         "\n\n**Note:** This escrow is for USDT TRC-20."*(escrow.coin == "usdt") +
                         config.signature())
@@ -449,14 +454,14 @@ def checksub(r: praw.Reddit, db: database.Database) :
                                                             "The amount to be escrowed: " + str(escrow.value) + ' ' + escrow.coin.upper() + '\n\n'+
                                                             "If you wish to join the escrow transaction, you must agree to the following terms, as set out by u/" + escrow.sender + ":\n\n" +
                                                             escrow.contract + "\n\n" +
-                                                            "...as well as our [terms of service](https://reddit.com/r/Cash4Cash/wiki/index/tos). If you agree to the terms and would like to join the escrow, reply `!join`. If you DO NOT agree to " +
+                                                            "...as well as our [terms of service](https://www.reddit.com/user/Escrow-Bot/comments/ypvcvv/escrowbot_terms_of_use/). If you agree to the terms and would like to join the escrow, reply `!join`. If you DO NOT agree to " +
                                                             "the terms or the amount, simply ignore this message. You can join again later whenever you want. Escrows are subject to a small" +
-                                                            " fee in order to help pay for server costs. More info about the escrow and the fee schedule can be found on our [wiki page](https://reddit.com/r/cash4cash/wiki/index/escrow)" +
+                                                            " fee in order to help pay for server costs. More info about the escrow and the [fee schedule](https://www.reddit.com/user/Escrow-Bot/comments/ypvkk5/current_escrow_fees/) can be found on the [profile page](https://www.reddit.com/user/Escrow-Bot/comments/qen5ae/whats_this/)" +
                                                             "Since this is an ETH escrow, please be aware that " +
                                                             "custom feerates are not supported yet when you withdraw your funds.\n\n" +
                                                             " **Note:** This does not mean that the sender is guaranteed not a scammer. The escrow has not been funded and no money has been sent yet." +
                                                             config.signature())
-                    reply = "New escrow transaction opened. We are now waiting for u/" + escrow.recipient + " to agree to the escrow. All escrows are subject to our [terms of service](https://reddit.com/r/Cash4Cash/wiki/index/tos). By using the escrow, you agree to be bound by these terms. This escrow transaction's ID is " + escrow.id + config.signature()
+                    reply = "New escrow transaction opened. We are now waiting for u/" + escrow.recipient + " to agree to the escrow. All escrows are subject to our [terms of service](https://www.reddit.com/user/Escrow-Bot/comments/ypvcvv/escrowbot_terms_of_use/). By using the escrow, you agree to be bound by these terms. This escrow transaction's ID is " + escrow.id + config.signature()
                     if (escrow.contract == "*The sender did not supply any contract terms.*") :
                         reply += "\n\nTip: You can add a \"contract\" on a separate line after the line containing `!escrow`. The recipient will be asked to agree to the contract before joining the escrow."
                     db.add(escrow)
