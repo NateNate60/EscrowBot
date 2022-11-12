@@ -6,21 +6,8 @@ from decimal import Decimal, InvalidOperation
 import prawcore
 import atexit
 from datetime import datetime
-from uslapi import uslapi
 
 r = praw.Reddit(username = config.username, password = config.password, client_id = config.client_id, client_secret = config.client_secret, user_agent = "Nate'sEscrowBot")
-
-#For interacting with the USL
-usls = uslapi.UniversalScammerList('bot EscrowBot')
-usl = usls.login(config.uslusername, config.uslpassword)
-
-def usllogout():
-    """
-    Logs out of the USL
-    """
-    usls.logout(usl)
-#Auto-logout USL upon exit
-atexit.register(usllogout)
 
 def formatescrowlist (escrowlist: list) -> str :
     """
@@ -157,7 +144,6 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                     continue
                 try :
                     #list of the USL status of escrow [sender, recipient]
-                    listed = [usls.query(usl, escrow.sender), usls.query(usl, escrow.recipient)]
                     r.redditor(escrow.recipient).message("Invitation to join escrow", f"{escrow.sender} has invited you to join the escrow with ID {escrow.id} \n\n" +
                                                          f"The amount to be escrowed: {str(escrow.value)} {escrow.coin.upper()}\n\n"+
                                                          f"If you wish to join the escrow transaction, you must agree to the following terms, as set out by u/{escrow.sender}:\n\n" +
@@ -167,10 +153,9 @@ def checkinbox(r: praw.Reddit, db: database.Database) -> list :
                                                          " fee in order to help pay for server costs. More info about the escrow and the [fee schedule](https://www.reddit.com/user/Escrow-Bot/comments/ypvkk5/current_escrow_fees/) can be found on the [profile page](https://www.reddit.com/user/Escrow-Bot/comments/qen5ae/whats_this/)" +
                                                          "\n\n**Note:** This does not mean that the sender is guaranteed not a scammer. The escrow has not been funded and no money has been sent yet." +
                                                          "\n\n**Note:** This escrow is for USDT TRC-20."*(escrow.coin == 'usdt') +
-                                                         "\n\n**Warning:** The person who initiated this escrow is listed on the Universal Scammer List. Please exercise caution and proceed at your own risk." * listed[0]["banned"] +
                                                          config.signature())
                     message.reply(f"New escrow transaction opened. We are now waiting for u/{escrow.recipient} to agree to the escrow. All escrows are subject to our [terms of service](https://www.reddit.com/user/Escrow-Bot/comments/ypvcvv/escrowbot_terms_of_use/). By using the escrow, you agree to be bound by these terms." +
-                                  f" This escrow transaction's ID is {escrow.id}." + '\n\n**NOTE**: ETH escrow values are rounded to the nearest 0.00001.' *(escrow.coin == 'eth') + '\n\n**Warning:** The person you\'re dealing with is listed on the Universal Scammer List. Please exercise caution and proceed at your own risk.' * listed[1]['banned'] + config.signature())
+                                  f" This escrow transaction's ID is {escrow.id}." + config.signature())
                     
                     db.add(escrow)
                 except Exception:
@@ -389,7 +374,7 @@ def checksub(r: praw.Reddit, db: database.Database) :
         except ValueError :
             pass
 
-    for comment in r.subreddit(config.subreddit).comments(limit=1000) :
+    for comment in r.subreddit(config.subreddit).comments(limit=50) :
         try :
             if (comment.id in commentsrepliedto or comment.author.name == r.user.me().name or comment.author.name == "AutoModerator") :
                 continue
