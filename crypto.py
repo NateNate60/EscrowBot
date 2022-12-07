@@ -236,7 +236,7 @@ class Escrow :
                     raise ValueError #address provided is invalid
                 contract = client.get_contract("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t") #fetch USDT TRC-20 contract. Hard-coded contract address.
                 privkey = tronpy.keys.PrivateKey((bytes.fromhex(config.tronpriv)))
-                tx = (contract.functions.transfer(addr, int(self.value * Decimal(1000000)) - int(Decimal(config.escrowfee['usdt']) * Decimal(1000000))).with_owner(config.tronaddr).fee_limit(10000000).build().sign(privkey))
+                tx = (contract.functions.transfer(addr, int(self.value * Decimal(1000000)) - int(Decimal(config.escrowfee['usdt']) * Decimal(1000000))).with_owner(config.tronaddr).fee_limit(30000000).build().sign(privkey))
                 txid = tx.txid
                 tx.broadcast()
             return txid
