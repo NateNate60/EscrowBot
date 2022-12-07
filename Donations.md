@@ -1,16 +1,23 @@
 # Donations
 
-Server costs are around $11 per month. Escrow fees are used to offset this, but it falls short of breaking even. If you would like to contribute towards this project, feel free to send a crypto donation:
+Tips of any size are appreciated and will be used to pay for hosting fees.
 
-- btc: 3BzrZKHv1F5qNZK45vUkZMBZUrpF1vtgD9
+Server costs are around $11 per month. In the past, escrow fees were used to help pay for this. As of 2022, no such fees are collected and the service is entirely free of charge except for network fees paid to the network. If you would like to contribute towards this project, please consider sending a small amount of crypto.
+
+- btc: bc1qndjuh4c04kvkcuv0yvkx7p4f37ta9a0nmqvmcd
 - lightning (feel free to open a channel!): 033a7fca1cb089b33ac232dd73c2c32aeacffe16319b72bec16208f3a9002e6d17
-- bch: qzj3km6zfqlul8utf2kepwxncmadp5j80qg7dp0m3g
-- ltc: MWXZLvyL7rE5zarAxz6i34iqwVFJzZ978o
-- eth: 0xC50840e9fec8d5F6c696896362393a0Ac3d1A8b6
-- doge: DTKnpTnn1JNBRZBibF4L7a9WKDtLcU56Ue
-- usdt (trc-20): TDJjy4nRQwpNRFjWg45GZmhbQDaGNUxgEB
-- trx: TDJjy4nRQwpNRFjWg45GZmhbQDaGNUxgEB
-- xmr: 471QNEmNCjx81duY9NkzBcVezM9Hx1i1XMpRSy9PJdAp6Yrfpcg83syV6PZtk6dctgEex48FqXDdj9ejBnphC7SQ5Tu8WYN
-- coinbase (send any crypto!): nathanlim2004@gmail.com
+- bch: qqekx4n8xlygd9jljd396vkvz2ulx9m24umzw2daqe
+- ltc: MWmU2MQ4Xn6DHM9U8cQf8P6tWk5C2rVGu7
+- eth: 0x1D913f0727E34F400F3Dd2654D0Bcb389BBf71f5
+- doge: DLxSQ6jBwaQ3eKp6naFjDGZvAZ8TpvBQZK
+- usdt (trc-20): TLxdv1cKgxJehkfndCjuXuCdFuVrtAQF7Q
+- usdt (erc-20): 0xFf118524CE88b96826AF2f6C100D34e4e9618E18
+- usdc (trc-20): TFp4BpAdwEiYzG8ZwMpeWvTLh5EjtjyxDQ
+- usdc (erc-20): 0x11583b2995c1F23f2369d4F68e3c04adE539c8Dc
+- trx: TLxdv1cKgxJehkfndCjuXuCdFuVrtAQF7Q
+- xmr: 43CNqkWMxBNb3hzagrhYTb2GMphuDM3np9UbFPxwZAZZ9gQtd3gV9Zx4g6hAuE95F2VMgChqGdunr6SmELjsgNWzDks3L17
+- coinbase (send any crypto!): natenate60@yahoo.com
+- Binance: natenate60@yahoo.com
+- Cash App: $NathanQLim
 
-I'll also take Cash App: $NathanQLim
+Contributions are unfortunately not eligible for tax deduction under US law.
