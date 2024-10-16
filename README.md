@@ -1,12 +1,6 @@
 # EscrowBot
 
-**Yes, this project is still active.** I will remove this message if I ever take it offline. This repository just doesn't get many more commits because the project is pretty much "done" and feature-complete.
-
-## Are you interested in having this bot run on your subreddit?
-
-Contact me using the information below! Hosting is provided by me, free of charge. The bot runs in a US datacentre and the server receives regular security updates.
-
-You are also free to clone the code and run it yourself!
+This bot is no longer active due to changes in the regulatory environment.
 
 ## List of supported coins
 
